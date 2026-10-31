@@ -1,0 +1,77 @@
+﻿@inject IConfiguration Config
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Local Disk Browser</title>
+    <meta name="app-base" content="@Url.Content("~/")" />
+    <meta name="use-recycle" content="@((Environment.UserInteractive && (Config.GetValue<bool?>("FileOperations:UseRecycleBin") ?? true)) ? "true" : "false")" />
+    <link rel="stylesheet" href="~/css/browser.css" asp-append-version="true" />
+</head>
+<body>
+<div id="toolbar">
+    <!-- data-ico="key" -> the icon comes from UI_ICONS in browser.js (same icons as the right-click menu) -->
+    <button id="bBack" data-ico="back" title="Back (Alt+Left)"></button>
+    <button id="bFwd" data-ico="fwd" title="Forward (Alt+Right)"></button>
+    <button id="bUp" data-ico="up" title="Up one level (Backspace)">Up</button>
+    <input id="addr" type="text" spellcheck="false" title="Type a path and press Enter" />
+    <button id="bGo" data-ico="go">Go</button>
+    <input id="search" type="text" placeholder="Search in this folder (* ? allowed)" spellcheck="false" />
+    <button id="bSearch" data-ico="search">Search</button>
+    <form method="post" asp-controller="Account" asp-action="Logout" style="margin:0"><button type="submit" data-ico="logout">Logout</button></form>
+</div>
+<div id="actions">
+    <button id="bNewFolder" data-ico="newFolder">New Folder</button>
+    <button id="bNewFile" data-ico="newFile">New File</button>
+    <span class="sep"></span>
+    <button id="bCopy" data-ico="copy" title="Ctrl+C">Copy</button>
+    <button id="bCut" data-ico="cut" title="Ctrl+X">Cut</button>
+    <button id="bPaste" data-ico="paste" title="Ctrl+V">Paste</button>
+    <span class="sep"></span>
+    <button id="bRename" data-ico="rename" title="F2">Rename</button>
+    <button id="bDelete" data-ico="delete" title="Delete (Shift+Delete = permanent)">Delete</button>
+    <span class="sep"></span>
+    <button id="bZip" data-ico="zip">Zip</button>
+    <button id="bExtract" data-ico="extract">Extract</button>
+    <span class="sep"></span>
+    <button id="bOpen" data-ico="open" title="Enter">Open / View</button>
+    <button id="bEdit" data-ico="edit" title="F4">Edit</button>
+    <button id="bDownload" data-ico="download" title="Download the selected file(s); folders and multiple items come as a .zip">Download</button>
+    <button id="bUpload" data-ico="upload" title="You can also drag files here or press Ctrl+V after copying files on your computer">Upload Files</button>
+    <button id="bUploadDir" data-ico="uploadDir">Upload Folder</button>
+    <button id="bProps" data-ico="props" title="Alt+Enter">Properties</button>
+    <span class="sep"></span>
+    <label><input type="checkbox" id="chkHidden" checked /> Show hidden</label>
+    <button id="bRefresh" data-ico="refresh" title="F5">Refresh</button>
+</div>
+<div id="main">
+    <div id="sidebar">
+        <div class="hdr">💽 Drives</div>
+        <div id="drives"></div>
+    </div>
+    <div id="content">
+        <table id="grid">
+            <thead>
+            <tr>
+                <th data-k="name">Name</th>
+                <th data-k="modified">Date modified</th>
+                <th data-k="ext">Type</th>
+                <th data-k="size" class="r">Size</th>
+            </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+        </table>
+        <div id="empty" hidden>This folder is empty.</div>
+    </div>
+</div>
+<div id="status"><span id="stLeft"></span><span id="busy" hidden></span><span id="stClip"></span></div>
+
+<div id="ctx" hidden></div>
+<dialog id="dlg"><div id="dlgBody"></div><form method="dialog"><button data-ico="close">Close</button></form></dialog>
+
+<script src="~/js/browser.js" asp-append-version="true"></script>
+</body>
+</html>

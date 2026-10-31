@@ -1,0 +1,44 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Editor</title>
+    <meta name="app-base" content="@Url.Content("~/")" />
+    <link rel="stylesheet" href="~/lib/codemirror/codemirror.css" />
+    <link rel="stylesheet" href="~/lib/codemirror/addon/dialog.css" />
+    <link rel="stylesheet" href="~/css/browser.css" asp-append-version="true" />
+    <style>
+        #edHead { display: flex; gap: 8px; align-items: center; padding: 4px; background: #f0f0f0; border-bottom: 1px solid #aaa; }
+        #edName { font-weight: bold; }
+        #edPath { color: #555; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #edBox { flex: 1; min-height: 0; }
+        .CodeMirror { height: 100%; font: 13px Consolas, "Courier New", monospace; }
+        #edState.dirty { color: #b00; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div id="edHead">
+    <button id="bSave" title="Ctrl+S" disabled>💾 Save</button>
+    <button id="bWrap">↩️ Word wrap: off</button>
+    <span id="edName"></span>
+    <span id="edPath"></span>
+    <span id="edState"></span>
+</div>
+<div id="edBox"></div>
+<div id="status"><span id="stLeft">Loading...</span><span id="stRight"></span></div>
+
+<script src="~/lib/codemirror/codemirror.js"></script>
+@foreach (var m in new[] { "xml", "javascript", "css", "htmlmixed", "clike", "python", "sql", "markdown", "shell", "powershell", "yaml", "properties", "go", "ruby", "php" })
+{
+    <script src="~/lib/codemirror/mode/@(m).js"></script>
+}
+@foreach (var a in new[] { "searchcursor", "search", "dialog", "jump-to-line", "matchbrackets", "closebrackets", "active-line" })
+{
+    <script src="~/lib/codemirror/addon/@(a).js"></script>
+}
+<script src="~/js/editor.js" asp-append-version="true"></script>
+</body>
+</html>

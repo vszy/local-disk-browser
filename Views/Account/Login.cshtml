@@ -1,0 +1,33 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Login - Local Disk Browser</title>
+    <link rel="stylesheet" href="~/css/browser.css" asp-append-version="true" />
+    <style>
+        form { margin: 80px auto; width: 300px; border: 1px solid #aaa; padding: 16px; background: #f0f0f0; }
+        form label { display: block; margin-top: 8px; }
+        form input[type=text], form input[type=password] { width: 100%; }
+        form button { margin-top: 12px; }
+        .err { color: #b00; margin-top: 8px; }
+        .ver { color: #666; font-size: 11px; margin-top: 12px; }
+    </style>
+</head>
+<body>
+<form method="post" asp-controller="Account" asp-action="Login">
+    <b>Local Disk Browser</b>
+    <label>Username <input type="text" name="username" autofocus autocomplete="username" /></label>
+    <label>Password <input type="password" name="password" autocomplete="current-password" /></label>
+    <label><input type="checkbox" name="rememberMe" value="true" /> Remember me</label>
+    @if (ViewData["Error"] != null)
+    {
+        <div class="err">@ViewData["Error"]</div>
+    }
+    <button type="submit">Log in</button>
+    <div class="ver">Version @AppInfo.Version</div>
+</form>
+</body>
+</html>
