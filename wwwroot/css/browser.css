@@ -1,9 +1,29 @@
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; font: 13px Segoe UI, Arial, sans-serif; color: #000; background: #fff; }
 body { display: flex; flex-direction: column; }
-button { font: inherit; padding: 3px 8px; cursor: pointer; }
-button:disabled { cursor: default; }
+/* Flat light buttons: soft border, hover highlight (instead of the browser's default look). */
+button { font: inherit; padding: 3px 10px; cursor: pointer; color: #222; background: #fff; border: 1px solid #c8c8c8; border-radius: 3px; }
+button:hover:not(:disabled) { background: #e8f0fb; border-color: #8fb0e0; }
+button:active:not(:disabled) { background: #d6e4f7; }
+button:focus-visible { outline: 2px solid #4a90e2; outline-offset: 1px; }
+button:disabled { cursor: default; color: #999; background: #f4f4f4; border-color: #ddd; }
 input[type=text] { font: inherit; padding: 3px 5px; }
+
+/* Toolbar buttons: icon only, no button box. Text stays in the DOM (.blabel) for screen readers
+   and is shown as a custom tooltip (data-tip, set in browser.js). Only the icon (.bico) is dimmed,
+   so the tooltip, a child of the button, stays fully opaque. */
+#toolbar button, #actions button { position: relative; background: none; border: 0; padding: 2px 5px; font-size: 18px; line-height: 1; }
+#toolbar button .bico, #actions button .bico { margin: 0; opacity: 1; }
+#toolbar button:hover:not(:disabled) .bico, #actions button:hover:not(:disabled) .bico { opacity: .6; }
+#toolbar button:active:not(:disabled) .bico, #actions button:active:not(:disabled) .bico { opacity: .4; }
+#toolbar button:disabled .bico, #actions button:disabled .bico { opacity: .25; }
+#toolbar button[data-tip]:hover::after, #actions button[data-tip]:hover::after {
+    content: attr(data-tip); position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px;
+    z-index: 50; padding: 3px 8px; background: #333; color: #fff; font-size: 12px; white-space: nowrap;
+    border-radius: 3px; pointer-events: none;
+}
+#toolbar form button[data-tip]:hover::after { left: auto; right: 0; transform: none; }
+.blabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 #toolbar, #actions { display: flex; gap: 4px; padding: 4px; border-bottom: 1px solid #aaa; background: #f0f0f0; align-items: center; flex-wrap: wrap; }
 #addr { flex: 1 1 300px; min-width: 150px; }

@@ -226,7 +226,7 @@
 
     // ---------- icons for buttons and menus (single source; files use ICONS/iconFor above) ----------
     const UI_ICONS = {
-        back: '⬅️', fwd: '➡️', up: '⬆️', go: '▶️', search: '🔍', logout: '🚪',
+        back: '⬅️', fwd: '➡️', up: '⬆️', go: '▶️', search: '🔍', logout: '🔒',
         newFolder: '📁', newFile: '📄', copy: '📋', cut: '✂️', paste: '📥', rename: '✏️', delete: '🗑️',
         zip: '📦', extract: '📂', open: '👁️', edit: '📝', download: '⬇️', upload: '📤', uploadDir: '🗂️',
         props: 'ℹ️', refresh: '🔄', close: '✖️'
@@ -234,6 +234,20 @@
     document.querySelectorAll('[data-ico]').forEach(b => {
         const s = document.createElement('span');
         s.className = 'bico'; s.textContent = UI_ICONS[b.dataset.ico] || '';
+        // Toolbar buttons show the icon only: label + the shortcut from title become a styled tooltip
+        // (data-tip, drawn by CSS) instead of the browser's native title tooltip.
+        if (b.closest('#toolbar, #actions')) {
+            const label = b.textContent.trim();
+            const hint = b.title;
+            b.removeAttribute('title');
+            b.dataset.tip = label ? (hint ? label + ' (' + hint + ')' : label) : hint;
+            if (label) {
+                b.textContent = '';
+                const l = document.createElement('span');
+                l.className = 'blabel'; l.textContent = label;
+                b.append(l);
+            }
+        }
         b.prepend(s);
     });
 

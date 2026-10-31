@@ -4,7 +4,7 @@ A plain, functional web-based file manager for the disks of the machine it runs 
 Browse drives and folders, copy / move / delete, zip / extract, edit text files, upload and download, view properties.
 No fancy design on purpose. Protected by a login.
 
-**Current version: 1.1.0** (shown on the login page; defined in `LocalDiskBrowser.csproj`)
+**Current version: 1.1.4** (shown on the login page; defined in `LocalDiskBrowser.csproj`)
 
 ## Features
 
@@ -68,6 +68,18 @@ web.config                       IIS settings (request size)
 ```
 
 ## Changelog
+
+### 1.1.4
+Logout icon changed from the door (🚪) to a lock (🔒).
+
+### 1.1.3
+Toolbar icons are at full opacity and fade on hover (instead of the reverse). The browser's native title tooltip is replaced by a custom dark tooltip (action name and shortcut) drawn by CSS from `data-tip`.
+
+### 1.1.2
+Toolbar buttons are now icon only, with no button box. Hovering raises the icon's opacity and shows a tooltip with the action name and its shortcut. Disabled buttons are faded. Dialog buttons keep their text.
+
+### 1.1.1
+Buttons (toolbar, dialogs, login) restyled: white background, thin light-grey border, rounded corners, blue hover highlight, greyed-out when disabled. CSS only (`wwwroot/css/browser.css`).
 
 ### 1.1.0
 "Remember me" checkbox on the login page. When ticked, the login cookie is persistent (1 day); otherwise it is a session cookie as before.
