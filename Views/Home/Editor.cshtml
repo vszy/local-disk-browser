@@ -7,6 +7,7 @@
     <meta charset="utf-8" />
     <title>Editor</title>
     <meta name="app-base" content="@Url.Content("~/")" />
+    <link rel="stylesheet" href="~/lib/lucide/lucide.css" />
     <link rel="stylesheet" href="~/lib/codemirror/codemirror.css" />
     <link rel="stylesheet" href="~/lib/codemirror/addon/dialog.css" />
     <link rel="stylesheet" href="~/css/browser.css" asp-append-version="true" />
@@ -21,8 +22,8 @@
 </head>
 <body>
 <div id="edHead">
-    <button id="bSave" title="Ctrl+S" disabled>💾 Save</button>
-    <button id="bWrap">↩️ Word wrap: off</button>
+    <button id="bSave" title="Ctrl+S" disabled><i class="icon-save" style="color:#1e9e5a"></i> Save</button>
+    <button id="bWrap"><i class="icon-wrap-text" style="color:#3a7bd5"></i> Word wrap: off</button>
     <span id="edName"></span>
     <span id="edPath"></span>
     <span id="edState"></span>

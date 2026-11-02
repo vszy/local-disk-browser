@@ -9,6 +9,7 @@
     <title>Local Disk Browser</title>
     <meta name="app-base" content="@Url.Content("~/")" />
     <meta name="use-recycle" content="@((Environment.UserInteractive && (Config.GetValue<bool?>("FileOperations:UseRecycleBin") ?? true)) ? "true" : "false")" />
+    <link rel="stylesheet" href="~/lib/lucide/lucide.css" />
     <link rel="stylesheet" href="~/css/browser.css" asp-append-version="true" />
 </head>
 <body>
@@ -46,11 +47,14 @@
     <span class="sep"></span>
     <label><input type="checkbox" id="chkHidden" checked /> Show hidden</label>
     <button id="bRefresh" data-ico="refresh" title="F5">Refresh</button>
+    <span id="cfHint"><i class="icon-triangle-alert" style="color:#e08a00"></i> If uploads or actions are blocked by Cloudflare, connect to the VPN and try again.</span>
 </div>
 <div id="main">
     <div id="sidebar">
-        <div class="hdr">💽 Drives</div>
+        <div class="hdr"><i class="icon-hard-drive" style="color:#555"></i> Drives</div>
         <div id="drives"></div>
+        <div class="hdr"><i class="icon-history" style="color:#3a7bd5"></i> Recent <span class="clr">Clear</span></div>
+        <div id="recent"></div>
     </div>
     <div id="content">
         <table id="grid">

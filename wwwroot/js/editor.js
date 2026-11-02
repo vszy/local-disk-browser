@@ -79,7 +79,7 @@
     }
 
     $('bSave').onclick = () => save();
-    $('bWrap').onclick = () => { const w = !cm.getOption('lineWrapping'); cm.setOption('lineWrapping', w); $('bWrap').textContent = '↩️ Word wrap: ' + (w ? 'on' : 'off'); };
+    $('bWrap').onclick = () => { const w = !cm.getOption('lineWrapping'); cm.setOption('lineWrapping', w); $('bWrap').innerHTML = '<i class="icon-wrap-text" style="color:#3a7bd5"></i> Word wrap: ' + (w ? 'on' : 'off'); };
     cm.on('change', refreshState);
     cm.on('cursorActivity', cursorInfo);
     window.addEventListener('beforeunload', e => { if (dirty()) { e.preventDefault(); e.returnValue = ''; } });

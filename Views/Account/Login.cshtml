@@ -13,12 +13,20 @@
         form input[type=text], form input[type=password] { width: 100%; }
         form button { margin-top: 12px; }
         .err { color: #b00; margin-top: 8px; }
+        .logo { margin: 0 0 8px; font: bold 12px/1.1 Consolas, "Courier New", monospace; color: #2b5fb4; overflow: hidden; }
         .ver { color: #666; font-size: 11px; margin-top: 12px; }
     </style>
 </head>
 <body>
 <form method="post" asp-controller="Account" asp-action="Login">
-    <b>Local Disk Browser</b>
+    <pre class="logo" aria-label="Local Disk Browser"> _                 _   ___  _    _
+| |   ___  __ __ _| | |   \(_)__| |__
+| |__/ _ \/ _/ _` | | | |) | (_-&lt; / /
+|____\___/\__\__,_|_| |___/|_/__/_\_\
+ ___
+| _ )_ _ _____ __ _____ ___ _ _
+| _ \ '_/ _ \ V  V (_-&lt;/ -_) '_|
+|___/_| \___/\_/\_//__/\___|_|</pre>
     <label>Username <input type="text" name="username" autofocus autocomplete="username" /></label>
     <label>Password <input type="password" name="password" autocomplete="current-password" /></label>
     <label><input type="checkbox" name="rememberMe" value="true" /> Remember me</label>

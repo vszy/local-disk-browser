@@ -25,6 +25,7 @@ input[type=text] { font: inherit; padding: 3px 5px; }
 #toolbar form button[data-tip]:hover::after { left: auto; right: 0; transform: none; }
 .blabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
+#cfHint { color: #8a4b00; background: #fff3cd; border: 1px solid #e0c36a; padding: 2px 8px; font-size: 12px; }
 #toolbar, #actions { display: flex; gap: 4px; padding: 4px; border-bottom: 1px solid #aaa; background: #f0f0f0; align-items: center; flex-wrap: wrap; }
 #addr { flex: 1 1 300px; min-width: 150px; }
 #search { width: 240px; }
@@ -41,6 +42,12 @@ input[type=text] { font: inherit; padding: 3px 5px; }
 .drive .bar i.full { background: #d33; }
 .drive .sub { color: #555; font-size: 11px; }
 .drive.na { color: #888; }
+#sidebar .hdr .clr { float: right; font-weight: normal; font-size: 11px; color: #3a5fa8; cursor: pointer; }
+#sidebar .hdr .clr:hover { text-decoration: underline; }
+.rec { padding: 3px 8px; cursor: pointer; border-bottom: 1px solid #e4e4e4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rec:hover { background: #e8f0fe; }
+.rec .sub { color: #555; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
+#recent .none { padding: 3px 8px; }
 
 #content { flex: 1; overflow: auto; position: relative; }
 #grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -57,6 +64,7 @@ input[type=text] { font: inherit; padding: 3px 5px; }
 #rows tr.cut { opacity: .5; }
 #rows tr.hid td:first-child { color: #777; font-style: italic; }
 #rows tr.dir td:first-child { font-weight: 600; }
+.ico [class^="icon-"], .bico [class^="icon-"] { vertical-align: middle; }
 .ico { display: inline-block; width: 20px; text-align: center; margin-right: 4px; }
 #empty { padding: 20px; color: #666; }
 
@@ -68,6 +76,7 @@ input[type=text] { font: inherit; padding: 3px 5px; }
     border: 2px solid #9bb8e6; border-top-color: #0a4fb3; border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 body.busy, body.busy #rows tr { cursor: progress; }
+#status.up #stLeft { background: #fff3cd; color: #0a4fb3; font-weight: bold; padding: 0 6px; }
 #status.err #stLeft { color: #b00; font-weight: bold; }
 
 #ctx { position: fixed; background: #fff; border: 1px solid #666; box-shadow: 2px 2px 4px rgba(0,0,0,.3); z-index: 10; min-width: 170px; padding: 2px 0; }

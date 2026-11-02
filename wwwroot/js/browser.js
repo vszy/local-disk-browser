@@ -24,7 +24,8 @@
     };
     const fmtDate = s => { const d = new Date(s); return isNaN(d) ? '' : d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
     const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    const status = (msg, isErr) => { statusL.textContent = msg; statusL.title = msg; statusBar.classList.toggle('err', !!isErr); };
+    // hl = highlight (yellow) for operations the user is waiting for or just finished: search, zip, extract, download, upload.
+    const status = (msg, isErr, hl) => { statusL.textContent = msg; statusL.title = msg; statusBar.classList.toggle('err', !!isErr); statusBar.classList.toggle('up', !!hl && !isErr); };
 
     // ---------- busy indicator: spinner + elapsed time in the status bar while any API call is running ----------
     const BUSY_LABELS = {
@@ -55,6 +56,13 @@
         $('busy').hidden = true; document.body.classList.remove('busy');
     }
 
+    // Cloudflare in front of the server sometimes blocks requests from certain networks (answers with its own HTML page).
+    // Connecting to the VPN avoids it; the permanent hint next to Refresh (#cfHint) already says so, the error repeats it.
+    const CF_HINT = 'Blocked by Cloudflare. Connect to the VPN and try again.';
+    function cfBlocked(httpStatus) {
+        return `HTTP ${httpStatus}: ${CF_HINT}`;
+    }
+
     async function api(method, url, body) {
         const opt = { method, headers: { 'X-Requested-With': 'LocalDiskBrowser' } };
         if (body !== undefined) { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
@@ -65,7 +73,8 @@
             let data = null;
             try { data = await r.json(); } catch { }
             if (!r.ok) {
-                const msg = data && (data.error || (data.errors && data.errors.join('\n'))) || ('HTTP ' + r.status);
+                let msg = data && (data.error || (data.errors && data.errors.join('\n'))) || ('HTTP ' + r.status);
+                if (!data && /cloudflare/i.test(r.headers.get('Server') || '')) msg = cfBlocked(r.status);
                 const e = new Error(msg); e.partial = r.status === 207; e.status = r.status; throw e;
             }
             return data;
@@ -97,29 +106,59 @@
         return drives;
     }
 
+    // ---------- recent folders and files: one list, kept in this browser only (localStorage), newest first ----------
+    // Entries are { k: 'dirs'|'files', p: path }.
+    const RECENT_MAX = 20;
+    function loadRecent() {
+        try {
+            const r = JSON.parse(localStorage.getItem('ldb.recent'));
+            return Array.isArray(r) ? r.filter(x => x && typeof x.p === 'string') : [];
+        } catch { return []; }
+    }
+    function saveRecent(r) { try { localStorage.setItem('ldb.recent', JSON.stringify(r)); } catch { } }
+    const sameRecent = (x, kind, path) => x.k === kind && x.p.toLowerCase() === path.toLowerCase();
+    function addRecent(kind, path) {
+        const r = [{ k: kind, p: path }, ...loadRecent().filter(x => !sameRecent(x, kind, path))].slice(0, RECENT_MAX);
+        saveRecent(r); renderRecent();
+    }
+    function removeRecent(kind, path) {
+        saveRecent(loadRecent().filter(x => !sameRecent(x, kind, path))); renderRecent();
+    }
+    function renderRecent() {
+        const r = loadRecent();
+        const row = ({ k, p }) => {
+            const cut = p.replace(/\\+$/, '').lastIndexOf('\\');
+            const name = cut < 0 ? p : p.slice(cut + 1), parent = cut < 0 ? '' : p.slice(0, cut + 1);
+            const ext = k === 'files' ? (p.match(/\.[^.\\]+$/) || [''])[0].toLowerCase() : '';
+            return `<div class="rec" data-k="${k}" data-p="${esc(p)}" title="${esc(p)}">${k === 'dirs' ? FOLDER_ICON : (ICONS[ext] || FILE_ICON)} ${esc(name)}<div class="sub">${esc(parent)}</div></div>`;
+        };
+        $('recent').innerHTML = r.length ? r.map(row).join('') : '<div class="sub none">None yet</div>';
+    }
+
     async function nav(path, push = true) {
         searchQ = null;
         if (path === null) { // "This PC"
             cur = null; items = driveItems; sel.clear(); anchor = -1;
             if (push) pushHist(null);
-            $('addr').value = ''; render(); status(items.length + ' drive(s)'); return;
+            $('addr').value = ''; render(); status(items.length + ' drive(s)'); return true;
         }
         const r = await run(() => api('GET', `/api/fs/list?path=${q(path)}&hidden=${$('chkHidden').checked}`));
-        if (!r) return;
+        if (!r) return false;
         cur = r.path; items = r.items; sel.clear(); anchor = -1;
-        if (push) pushHist(cur);
+        if (push) { pushHist(cur); addRecent('dirs', cur); }
         $('addr').value = cur; render(); status(`${items.length} item(s)`);
         document.querySelectorAll('.drive').forEach(el => el.classList.toggle('cur', cur.toUpperCase().startsWith(el.dataset.p.toUpperCase())));
+        return true;
     }
     function pushHist(p) { hist = hist.slice(0, histPos + 1); hist.push(p); histPos = hist.length - 1; }
 
     async function reload() {
         const keep = new Set(sel);
         // Refreshing the list must not wipe the result of the action that triggered it (e.g. a red "Access denied").
-        const msg = statusL.textContent, wasErr = statusBar.classList.contains('err');
+        const msg = statusL.textContent, wasErr = statusBar.classList.contains('err'), wasHl = statusBar.classList.contains('up');
         if (searchQ !== null) await doSearch(searchQ); else await nav(cur, false);
         sel = new Set([...keep].filter(p => items.some(i => i.path === p))); render();
-        if (msg) status(msg, wasErr);
+        if (msg) status(msg, wasErr, wasHl);
     }
 
     let driveItems = [];
@@ -129,32 +168,34 @@
 
     async function doSearch(text) {
         if (cur === null) return status('Open a folder first.', true);
-        status('Searching...');
+        status('Searching...', false, true);
         const r = await run(() => api('GET', `/api/fs/search?path=${q(cur)}&q=${q(text)}`));
         if (!r) return;
         searchQ = text; items = r.items; sel.clear(); anchor = -1; render();
-        status(`${items.length} result(s)${r.truncated ? ' (truncated at 1000)' : ''} for "${text}" in ${cur}`);
+        status(`${items.length} result(s)${r.truncated ? ' (truncated at 1000)' : ''} for "${text}" in ${cur}`, false, true);
     }
 
-    // ---------- icons ----------
+    // ---------- icons: Lucide icon font (local copy in wwwroot/lib/lucide, no CDN); names: lucide.dev/icons ----------
+    const ic = (name, color) => `<i class="icon-${name}"${color ? ` style="color:${color}"` : ''}></i>`;
+    const FOLDER_ICON = ic('folder', '#e0a800'), DRIVE_ICON = ic('hard-drive', '#555'), FILE_ICON = ic('file', '#777');
     const ICONS = {};
     const addIcons = (icon, exts) => exts.split(' ').forEach(x => ICONS['.' + x] = icon);
-    addIcons('🖼️', 'jpg jpeg png gif bmp webp svg ico tif tiff heic');
-    addIcons('🎵', 'mp3 wav flac aac ogg wma m4a');
-    addIcons('🎬', 'mp4 mkv avi mov wmv flv webm mpg mpeg');
-    addIcons('📦', 'zip rar 7z tar gz tgz bz2 cab iso');
-    addIcons('📕', 'pdf');
-    addIcons('📘', 'doc docx rtf odt');
-    addIcons('📗', 'xls xlsx csv ods');
-    addIcons('📙', 'ppt pptx odp');
-    addIcons('📝', 'txt md log ini cfg conf');
-    addIcons('⚙️', 'exe msi bat cmd com ps1 sh dll sys');
-    addIcons('💻', 'cs js ts jsx tsx py java cpp c h hpp go rs php rb vb sln csproj cshtml razor');
-    addIcons('🌐', 'html htm css xml json yml yaml');
-    addIcons('🗄️', 'db sqlite mdb accdb sql bak mdf ldf');
-    addIcons('🔤', 'ttf otf woff woff2 fon');
-    addIcons('🔗', 'lnk url');
-    const iconFor = it => it.drive ? '💽' : it.isDir ? '📁' : (ICONS[it.ext] || '📄');
+    addIcons(ic('file-image', '#1a9b6c'), 'jpg jpeg png gif bmp webp svg ico tif tiff heic');
+    addIcons(ic('file-music', '#8e44ad'), 'mp3 wav flac aac ogg wma m4a');
+    addIcons(ic('file-video', '#c0392b'), 'mp4 mkv avi mov wmv flv webm mpg mpeg');
+    addIcons(ic('file-archive', '#b8860b'), 'zip rar 7z tar gz tgz bz2 cab iso');
+    addIcons(ic('file-text', '#d9363e'), 'pdf');
+    addIcons(ic('file-text', '#2b5fb4'), 'doc docx rtf odt');
+    addIcons(ic('file-spreadsheet', '#1e7e45'), 'xls xlsx csv ods');
+    addIcons(ic('presentation', '#d2691e'), 'ppt pptx odp');
+    addIcons(ic('file-text', '#666'), 'txt md log ini cfg conf');
+    addIcons(ic('file-cog', '#555'), 'exe msi bat cmd com ps1 sh dll sys');
+    addIcons(ic('file-code', '#3a7bd5'), 'cs js ts jsx tsx py java cpp c h hpp go rs php rb vb sln csproj cshtml razor');
+    addIcons(ic('globe', '#1a8fb3'), 'html htm css xml json yml yaml');
+    addIcons(ic('database', '#7a5c3a'), 'db sqlite mdb accdb sql bak mdf ldf');
+    addIcons(ic('type', '#777'), 'ttf otf woff woff2 fon');
+    addIcons(ic('link', '#3a7bd5'), 'lnk url');
+    const iconFor = it => it.drive ? DRIVE_ICON : it.isDir ? FOLDER_ICON : (ICONS[it.ext] || FILE_ICON);
 
     // ---------- rendering ----------
     function render() {
@@ -226,14 +267,22 @@
 
     // ---------- icons for buttons and menus (single source; files use ICONS/iconFor above) ----------
     const UI_ICONS = {
-        back: '⬅️', fwd: '➡️', up: '⬆️', go: '▶️', search: '🔍', logout: '🔒',
-        newFolder: '📁', newFile: '📄', copy: '📋', cut: '✂️', paste: '📥', rename: '✏️', delete: '🗑️',
-        zip: '📦', extract: '📂', open: '👁️', edit: '📝', download: '⬇️', upload: '📤', uploadDir: '🗂️',
-        props: 'ℹ️', refresh: '🔄', close: '✖️'
+        back: 'arrow-left', fwd: 'arrow-right', up: 'arrow-up', go: 'circle-arrow-right', search: 'search', logout: 'log-out',
+        newFolder: 'folder-plus', newFile: 'file-plus', copy: 'copy', cut: 'scissors', paste: 'clipboard-paste', rename: 'pencil', delete: 'trash-2',
+        zip: 'file-archive', extract: 'folder-open', open: 'eye', edit: 'square-pen', download: 'download', upload: 'upload', uploadDir: 'folder-up',
+        props: 'info', refresh: 'refresh-cw', close: 'x'
     };
+    // Same keys as UI_ICONS: every action has its own colour so the toolbar is easy to scan.
+    const UI_COLORS = {
+        back: '#3a7bd5', fwd: '#3a7bd5', up: '#3a7bd5', go: '#1e9e5a', search: '#7a4fd0', logout: '#c0392b',
+        newFolder: '#e0a800', newFile: '#3a7bd5', copy: '#3a7bd5', cut: '#d9363e', paste: '#2b9e8f', rename: '#d2691e', delete: '#d9363e',
+        zip: '#b8860b', extract: '#e0a800', open: '#1a8fb3', edit: '#2b5fb4', download: '#1e9e5a', upload: '#2b5fb4', uploadDir: '#7a4fd0',
+        props: '#1a8fb3', refresh: '#1e9e5a', close: '#888'
+    };
+    const uiIcon = key => UI_ICONS[key] ? ic(UI_ICONS[key], UI_COLORS[key]) : '';
     document.querySelectorAll('[data-ico]').forEach(b => {
         const s = document.createElement('span');
-        s.className = 'bico'; s.textContent = UI_ICONS[b.dataset.ico] || '';
+        s.className = 'bico'; s.innerHTML = uiIcon(b.dataset.ico);
         // Toolbar buttons show the icon only: label + the shortcut from title become a styled tooltip
         // (data-tip, drawn by CSS) instead of the browser's native title tooltip.
         if (b.closest('#toolbar, #actions')) {
@@ -280,7 +329,7 @@
         ];
         const m = $('ctx');
         m.innerHTML = entries.map((e, i) => e[0] === '-' ? '<hr>'
-            : `<div data-i="${i}" class="${e[2] ? '' : 'dis'}"><span class="bico">${UI_ICONS[e[3]] || ''}</span>${esc(e[0])}</div>`).join('');
+            : `<div data-i="${i}" class="${e[2] ? '' : 'dis'}"><span class="bico">${uiIcon(e[3])}</span>${esc(e[0])}</div>`).join('');
         m.hidden = false;
         m.style.left = Math.min(x, innerWidth - m.offsetWidth - 4) + 'px';
         m.style.top = Math.min(y, innerHeight - m.offsetHeight - 4) + 'px';
@@ -292,21 +341,23 @@
     // ---------- actions ----------
     async function openItem(it) {
         if (it.isDir) return nav(it.path);
+        addRecent('files', it.path);
         // Views in a new tab if the browser can show it (image/pdf/audio/video/text); otherwise the server sends it as a download.
         window.open(BASE + 'api/fs/download?inline=true&path=' + q(it.path), '_blank');
     }
     function editSel() {
         const s = selItems(); if (s.length !== 1 || s[0].isDir) return status('Select one file to edit.', true);
+        addRecent('files', s[0].path);
         window.open(BASE + 'Home/Editor?path=' + q(s[0].path), '_blank');
     }
     function openSel() { const s = selItems(); if (s.length === 1) openItem(s[0]); }
     // One file downloads directly; folders or several items are zipped by the server first.
     async function download() {
         const s = selItems(); if (!s.length || cur === null) return status('Select something to download.', true);
-        if (s.length === 1 && !s[0].isDir) { location.href = BASE + 'api/fs/download?path=' + q(s[0].path); return; }
-        status('Preparing zip...');
+        if (s.length === 1 && !s[0].isDir) { addRecent('files', s[0].path); location.href = BASE + 'api/fs/download?path=' + q(s[0].path); return; }
+        status('Preparing zip...', false, true);
         const r = await run(() => api('POST', '/api/fs/zipdl', { paths: s.map(x => x.path), dest: null, permanent: false }));
-        if (r) { location.href = BASE + 'api/fs/zipdl?t=' + r.token; status('Download started (large folders may take a moment to start).'); }
+        if (r) { location.href = BASE + 'api/fs/zipdl?t=' + r.token; status('Download started (large folders may take a moment to start).', false, true); }
     }
 
     // ---------- upload: your PC -> server ----------
@@ -329,6 +380,7 @@
                     const text = (x.responseText || '').replace(/<style[\s\S]*?<\/style>|<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
                     const srv = x.getResponseHeader('Server');
                     msg += (text ? ' - ' + text : '') + (srv ? ` [Server: ${srv}]` : '');
+                    if (/cloudflare/i.test(srv || '')) msg = cfBlocked(x.status);
                 }
                 reject(new Error(msg));
             };
@@ -362,14 +414,15 @@
         const dest = cur, errors = [];
         let done = 0;
         for (const it of list) {
-            it.onProgress = p => status(`Uploading ${done + 1}/${list.length}: ${it.rel} (${p}%)`);
+            // Count and percentage come first: a long file name is cut off by the status bar and would hide them. status() clears the highlight.
+            it.onProgress = p => status(`Uploading ${done + 1}/${list.length} - ${p}% - ${it.rel}`, false, true);
             it.onProgress(0);
             try { await xhrUpload(it, dest); } catch (e) { errors.push(`${it.rel}: ${e.message}`); }
             done++;
         }
         uploading = false;
         if (errors.length) { status(`Uploaded ${done - errors.length}/${list.length}; ${errors.length} failed.`, true); alert(errors.join('\n')); }
-        else status(`Uploaded ${done} file(s) to ${dest}`);
+        else status(`Uploaded ${done} file(s) to ${dest}`, false, true);
         if (cur === dest) await reload();
     }
 
@@ -488,9 +541,9 @@
     }
     async function zip() {
         const s = selItems(); if (!s.length || cur === null) return;
-        status('Zipping...');
+        status('Zipping...', false, true);
         const r = await run(() => api('POST', '/api/fs/zip', { paths: s.map(x => x.path), dest: cur, permanent: false }));
-        if (r) status('Created ' + r.created);
+        if (r) status('Created ' + r.created, false, true);
         await reload();
     }
     const ARCHIVE_RE = /\.(zip|rar|7z|tar|tar\.gz|tgz|gz)$/i;
@@ -506,16 +559,16 @@
             if (dest === null) return;
         }
         const send = overwrite => api('POST', '/api/fs/extract', { path: s[0].path, dest: dest || null, overwrite });
-        status('Extracting...');
+        status('Extracting...', false, true);
         try {
             let r;
             try { r = await send(false); }
             catch (e) {
                 if (e.status !== 409 || !confirm('Some files already exist in the destination.\n\nReplace the existing files?')) throw e;
-                status('Extracting (replacing existing files)...');
+                status('Extracting (replacing existing files)...', false, true);
                 r = await send(true);
             }
-            status('Extracted to ' + r.created);
+            status('Extracted to ' + r.created, false, true);
         } catch (e) { status(e.message.split('\n')[0], true); if (e.message.length > 120) alert(e.message); }
         await reload();
     }
@@ -569,6 +622,16 @@
     $('bProps').onclick = props;
     $('bRefresh').onclick = async () => { await loadDrivesAndItems(); await reload(); };
     $('chkHidden').onchange = () => reload();
+    // Recent lists: a folder that no longer opens is dropped from the list; "Clear" empties one list.
+    $('sidebar').addEventListener('click', async e => {
+        const c = e.target.closest('.clr');
+        if (c) { saveRecent([]); return renderRecent(); }
+        const el = e.target.closest('.rec'); if (!el) return;
+        const p = el.dataset.p;
+        if (el.dataset.k === 'dirs') { if (!(await nav(p))) removeRecent('dirs', p); }
+        else openItem({ isDir: false, path: p });
+    });
+    renderRecent();
     $('drives').addEventListener('click', e => { const d = e.target.closest('.drive'); if (d && !d.classList.contains('na')) nav(d.dataset.p); });
 
     document.addEventListener('keydown', e => {

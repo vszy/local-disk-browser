@@ -1,15 +1,27 @@
 # Local Disk Browser
 
+```
+ _                 _   ___  _    _
+| |   ___  __ __ _| | |   \(_)__| |__
+| |__/ _ \/ _/ _` | | | |) | (_-< / /
+|____\___/\__\__,_|_| |___/|_/__/_\_\
+ ___
+| _ )_ _ _____ __ _____ ___ _ _
+| _ \ '_/ _ \ V  V (_-</ -_) '_|
+|___/_| \___/\_/\_//__/\___|_|
+```
+
 A plain, functional web-based file manager for the disks of the machine it runs on (ASP.NET Core 8 MVC).
 Browse drives and folders, copy / move / delete, zip / extract, edit text files, upload and download, view properties.
 No fancy design on purpose. Protected by a login.
 
-**Current version: 1.1.4** (shown on the login page; defined in `LocalDiskBrowser.csproj`)
+**Current version: 1.3.5** (shown on the login page; defined in `LocalDiskBrowser.csproj`)
 
 ## Features
 
 - **Drives:** every drive with label, type, filesystem and free/total space.
 - **Browse:** address bar, Back/Forward/Up, sortable columns, multi-select (Ctrl/Shift), keyboard navigation, right-click menu, show/hide hidden items, recursive search in the current folder (`*` and `?` allowed). Double-click opens a folder. File icons depend on the extension.
+- **Recent:** one list under *Drives* in the sidebar with the folders and files you used last (newest first, max 20, with *Clear*). Folders are added when you open them, files when you open/view, edit or download them. Click to go back there; a folder that no longer opens is dropped. Stored in this browser only (`localStorage`), so it is per browser and per computer.
 - **Copy / Cut / Paste (server side):** name clashes become `name - Copy.ext`. Folder-into-itself is blocked. Works across drives.
 - **Delete:** Recycle Bin by default; Shift+Delete / "Delete permanently" removes for good (with confirmation).
 - **Rename, New Folder, New File.**
@@ -68,6 +80,36 @@ web.config                       IIS settings (request size)
 ```
 
 ## Changelog
+
+### 1.3.5
+The login-page ASCII heading is also shown at the top of this README.
+
+### 1.3.4
+Fixed the login-page ASCII heading: a literal `<` in the art (`</ `) was read as HTML and swallowed part of it. It is now written as `&lt;`.
+
+### 1.3.3
+Login page: the "Local Disk Browser" heading is now ASCII art (plain text in a `<pre>`, no image).
+
+### 1.3.2
+Icons switched from Bootstrap Icons to [Lucide](https://lucide.dev/) (ISC licence, local font copy in `wwwroot/lib/lucide`, no internet needed). Same colours and same places; Lucide has no PDF/Word glyph, so PDF, Word and text files share the file-text icon and differ by colour.
+
+### 1.3.1
+Colourful icons: every toolbar / right-click action has its own colour (`UI_COLORS` in `browser.js`), as do the sidebar headers and the editor buttons. File icons were already coloured by type.
+
+### 1.3.0
+Icons are now [Bootstrap Icons](https://icons.getbootstrap.com/) (MIT, local copy in `wwwroot/lib/bootstrap-icons`, no internet needed) instead of emoji: toolbar, right-click menu, file list (coloured by type), sidebar, Recent list, editor buttons. Looks the same on every computer and browser.
+
+### 1.2.3
+The yellow status-bar highlight now covers every long-running operation and its result: search, zip, extract, download (`Preparing zip...`, `Download started`) and upload, not only upload progress. Errors stay red; routine messages (item counts, copy/cut) stay plain.
+
+### 1.2.2
+Upload progress in the status bar is highlighted (yellow background, bold blue) and now reads `Uploading 1/1 - 45% - file name`: count and percentage come first, so a long file name can no longer push them out of view.
+
+### 1.2.1
+When Cloudflare blocks a request (its HTML block page, `Server: cloudflare`), the error now says "Blocked by Cloudflare. Connect to the VPN and try again." and a permanent yellow note after the Refresh button tells users to connect to the VPN if actions are blocked by Cloudflare.
+
+### 1.2.0
+New: one *Recent* list (folders and files together) in the sidebar, saved in the browser's localStorage (max 20, Clear link).
 
 ### 1.1.4
 Logout icon changed from the door (🚪) to a lock (🔒).
