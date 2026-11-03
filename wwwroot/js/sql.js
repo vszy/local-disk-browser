@@ -76,9 +76,20 @@
 
     function renderTabs() {
         $('sqlTabs').innerHTML = TABS.map(t =>
-            `<div class="tab ${t.id === curTab ? 'on' : ''}" data-t="${t.id}">${ic(t.icon, t.color)} ${esc(t.label)}</div>`).join('');
+            `<div class="tab ${t.id === curTab ? 'on' : ''}" data-t="${t.id}">${ic(t.icon, t.color)} ${esc(t.label)}</div>`).join('')
+            + `<div id="bHints" class="hintsBtn" title="${hintsOn ? 'Hide' : 'Show'} the shortcut hints">${ic(hintsOn ? 'keyboard' : 'keyboard-off', '#666')}</div>`
+            + `<span id="limits" class="lim">${esc(limitsText)}</span>`;
     }
-    $('sqlTabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (t) showTab(t.dataset.t); });
+    // Shortcut hints (the bar above the editor) can be hidden; the row-limit note stays. Remembered in this browser.
+    let hintsOn = true, limitsText = ''; // limitsText: the row-limit note shown after the tabs (renderTabs rebuilds it)
+    try { hintsOn = localStorage.getItem('ldb.sql.hints') !== '0'; } catch { }
+    function applyHints() { document.querySelector('.hints').classList.toggle('off', !hintsOn); }
+    function toggleHints() {
+        hintsOn = !hintsOn; applyHints(); renderTabs();
+        try { localStorage.setItem('ldb.sql.hints', hintsOn ? '1' : '0'); } catch { }
+        cm.refresh();
+    }
+    $('sqlTabs').addEventListener('click', e => { if (e.target.closest('#bHints')) return toggleHints(); const t = e.target.closest('.tab'); if (t) showTab(t.dataset.t); });
 
     function showTab(id) {
         curTab = id; renderTabs();
@@ -183,9 +194,9 @@
                 if (CUR) return connect(); return noConnection();
             }
             configured = true; $('bRun').disabled = running;
-            $('limits').textContent = `Limits: grid shows the first ${i.displayRows.toLocaleString()} rows per result, Excel / CSV the first ${i.exportRows.toLocaleString()}.`;
-            $('connInfo').innerHTML = `<span class="k">Server</span> ${esc(i.server)}${i.ip && i.ip !== i.server ? ` <span class="k">(IP ${esc(i.ip)})</span>` : ''}`
-                + ` &nbsp; <span class="k">Database</span> ${esc(i.database || '(default)')} &nbsp; <span class="k">Login</span> ${esc(i.login)}`;
+            limitsText = `Limits: grid shows the first ${i.displayRows.toLocaleString()} rows per result, Excel / CSV the first ${i.exportRows.toLocaleString()}.`; $('limits').textContent = limitsText;
+            $('connInfo').innerHTML = `<span class="k">IP</span> ${esc(i.ip || i.server)} &nbsp; <span class="k">Database</span> ${esc(i.database || '(default)')}`;
+            $('connInfo').title = `Server ${i.server}, ${i.login}`;
             $('connState').className = 'connState'; $('connState').textContent = 'Connecting...';
             try {
                 const c = await api('POST', 'api/sql/connect');
@@ -577,7 +588,7 @@
     });
 
     // ---------- start ----------
-    loadSessions(); renderSessions(); renderTabs(); applyLayout();
+    loadSessions(); renderSessions(); renderTabs(); applyHints(); applyLayout();
     cm.setValue(active().sql);
     window.addEventListener('beforeunload', saveSessions);
     init();

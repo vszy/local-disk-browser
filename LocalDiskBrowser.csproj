@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- App version: shown on the login page. Bump on EVERY change (see AGENTS.md). -->
-    <Version>2.1.7</Version>
+    <Version>2.3.2</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 

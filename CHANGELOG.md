@@ -2,6 +2,21 @@
 
 Newest first. The current version is in `LocalDiskBrowser.csproj` and at the top of `README.md`.
 
+### 2.3.2
+SQL page: the SQL Server logo is back, small, before the IP / database on the button line.
+
+### 2.3.1
+SQL page: the row-limit note moved from the button line to the tab line, after the Jobs tab and the hints icon.
+
+### 2.3.0
+SQL page: removed the top line (logo, server / login / "Connected - SQL Server ..."). The button line now starts with only the IP and database, then the row limits, the database drop-down and the buttons. "Not connected" still shows in red when the connection fails; the server name and login are in the IP/database tooltip.
+
+### 2.2.1
+SQL page: the row-limit note moved onto the button line, before the database drop-down (no extra line). Hiding the shortcut hints now hides the whole hint bar.
+
+### 2.2.0
+New: SQL page: a keyboard icon after the Jobs tab hides / shows the shortcut hint bar (remembered in the browser). The row-limit note stays visible when the hints are hidden.
+
 ### 2.1.7
 Fix: commenting / uncommenting a selection in the SQL editor (Ctrl+/, Ctrl+K C / U) left out the last selected line.
 
