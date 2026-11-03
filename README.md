@@ -15,7 +15,7 @@ A plain, functional web-based file manager for the disks of the machine it runs 
 Browse drives and folders, copy / move / delete, zip / extract, edit text files, upload and download, view properties.
 No fancy design on purpose. Protected by a login.
 
-**Current version: 1.3.5** (shown on the login page; defined in `LocalDiskBrowser.csproj`)
+**Current version: 1.3.6** (shown on the login page; defined in `LocalDiskBrowser.csproj`)
 
 ## Features
 
@@ -80,6 +80,9 @@ web.config                       IIS settings (request size)
 ```
 
 ## Changelog
+
+### 1.3.6
+Docs: the example server name in `AGENTS.md` is now a placeholder (`your-server.example.com`).
 
 ### 1.3.5
 The login-page ASCII heading is also shown at the top of this README.
