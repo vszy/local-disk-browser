@@ -2,6 +2,30 @@
 
 Newest first. The current version is in `LocalDiskBrowser.csproj` and at the top of `README.md`.
 
+### 2.1.7
+Fix: commenting / uncommenting a selection in the SQL editor (Ctrl+/, Ctrl+K C / U) left out the last selected line.
+
+### 2.1.6
+Fix: SQL editor comment / uncomment chords now also work with Ctrl held for both keys (Ctrl+K, Ctrl+C / Ctrl+K, Ctrl+U), as in SSMS. Before, only Ctrl+K then a plain C / U worked.
+
+### 2.1.5
+SQL page: the database drop-down has the same height and look as the buttons next to it.
+
+### 2.1.4
+SQL page: the button line (database drop-down, Add database, Update, Forget, Run, Cancel, Excel, CSV) is right aligned.
+
+### 2.1.3
+SQL page: the row limits are now shown to users: a permanent "Limits" note in the hint bar (grid rows / Excel-CSV rows, from `SqlEditor:DisplayRows` / `ExportRows`), and the note under a truncated result now says which limit applied and how to get the rest.
+
+### 2.1.2
+SQL page: the database drop-down and the Add database / Update / Forget / Run / Cancel / Excel / CSV buttons now sit on their own line under the server info.
+
+### 2.1.1
+Fix: Ctrl+K in the SQL editor no longer opens the browser's address-bar search (it is the start of Ctrl+K C / U).
+
+### 2.1.0
+New: SQL editor shortcut **Ctrl+/** toggles comments on the selected lines (or the current line): uncomments when all are already commented, otherwise comments. Ctrl+K C / U still work.
+
 ### 2.0.0
 Breaking: **SQL Server connections are entered in the page, not in `appsettings.json`.** *Add database* takes a connection string, encrypts it in the browser (AES-GCM + RSA, so Cloudflare / proxies / logs never see it), the server tests it and stores it encrypted at rest (`App_Data/sqlconn`, Data Protection + DPAPI) under a random key. The browser keeps only that key and sends it with every call; several databases can be saved and switched in a drop-down, *Update* replaces a string, *Forget* deletes it. Each connection is tied to the user that saved it; a changed client IP only shows a warning. Replay protection (timestamp + one-time nonce), failed-key rate limit, `AttachDbFilename` rejected, optional `SqlEditor:AllowedServers`. `SqlEditor:ConnectionString` is no longer read: remove it from `appsettings.json` and add the database again in the SQL page. Keep `App_Data` when deploying.
 

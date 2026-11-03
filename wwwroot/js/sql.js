@@ -183,6 +183,7 @@
                 if (CUR) return connect(); return noConnection();
             }
             configured = true; $('bRun').disabled = running;
+            $('limits').textContent = `Limits: grid shows the first ${i.displayRows.toLocaleString()} rows per result, Excel / CSV the first ${i.exportRows.toLocaleString()}.`;
             $('connInfo').innerHTML = `<span class="k">Server</span> ${esc(i.server)}${i.ip && i.ip !== i.server ? ` <span class="k">(IP ${esc(i.ip)})</span>` : ''}`
                 + ` &nbsp; <span class="k">Database</span> ${esc(i.database || '(default)')} &nbsp; <span class="k">Login</span> ${esc(i.login)}`;
             $('connState').className = 'connState'; $('connState').textContent = 'Connecting...';
@@ -211,13 +212,16 @@
         extraKeys: {
             F5: () => run(), 'Ctrl-3': () => topRows(500), 'Ctrl-4': () => topRows(1), 'Ctrl-5': () => columnInfo(),
             'Alt-F1': () => showObject(['tables', 'tabletypes']), 'Ctrl-F1': () => showObject(['procs', 'views', 'functions']),
-            'Ctrl-R': () => toggleResults(), 'Ctrl-K C': () => commentSel(true), 'Ctrl-K U': () => commentSel(false),
+            'Ctrl-R': () => toggleResults(), 'Ctrl-/': () => toggleComment(), 'Ctrl-K C': () => commentSel(true), 'Ctrl-K U': () => commentSel(false),
+            'Ctrl-K Ctrl-C': () => commentSel(true), 'Ctrl-K Ctrl-U': () => commentSel(false), // SSMS style: Ctrl stays held
             'Ctrl-Space': () => showHint(),
             Tab: c => c.somethingSelected() ? c.indentSelection('add') : c.replaceSelection('    ', 'end'),
             'Shift-Tab': c => c.indentSelection('subtract')
         }
     });
     cm.on('cursorActivity', () => { const c = cm.getCursor(); $('stRight').textContent = `Ln ${c.line + 1}, Col ${c.ch + 1}`; });
+    // Ctrl+K starts the comment chords (Ctrl+K C / U): keep the browser from taking it for its address-bar search. Capture phase, the editor still gets the key.
+    window.addEventListener('keydown', e => { if (e.ctrlKey && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'k' && curTab === 'editor') e.preventDefault(); }, true);
     window.addEventListener('keydown', e => { if (e.key === 'F5') { e.preventDefault(); if (curTab === 'editor') run(); } });
 
     // Column names are fetched (once per table) only for the tables the query mentions after FROM / JOIN / UPDATE / INTO.
@@ -258,11 +262,21 @@
         showHint().finally(() => { hintBusy = false; });
     });
 
+    // Ctrl+/ : uncomment when every non-blank line of the selection is already commented, otherwise comment.
+    function toggleComment() {
+        const from = cm.getCursor('from'), to = cm.getCursor('to');
+        const last = to.line > from.line && to.ch === 0 ? to.line - 1 : to.line;
+        let allCommented = true;
+        for (let l = from.line; l <= last; l++) { const t = cm.getLine(l); if (t.trim() && !/^\s*--/.test(t)) { allCommented = false; break; } }
+        commentSel(!allCommented);
+    }
     function commentSel(on) {
         const from = cm.getCursor('from'), to = cm.getCursor('to');
-        if (to.line > from.line && to.ch === 0) to.line--; // a selection ending at column 0 does not include that line
-        if (on) cm.lineComment(from, { line: to.line, ch: 0 }, { lineComment: '--' });
-        else cm.uncomment(from, { line: to.line, ch: 0 }, { lineComment: '--' });
+        const last = to.line > from.line && to.ch === 0 ? to.line - 1 : to.line; // a selection ending at column 0 does not include that line
+        // The range must END INSIDE the last line: CodeMirror leaves out a last line when the end is at column 0.
+        const end = { line: last, ch: Math.max(1, cm.getLine(last).length) };
+        if (on) cm.lineComment({ line: from.line, ch: 0 }, end, { lineComment: '--' });
+        else cm.uncomment({ line: from.line, ch: 0 }, end, { lineComment: '--' });
     }
 
     // Sessions: several editor tabs, SQL text kept in this browser (never the connection string).
@@ -418,7 +432,7 @@
         const head = s.columns.map((c, i) => `<th data-c="${i}" title="${esc(s.types[i])}">${esc(c)}</th>`).join('');
         const body = s.rows.map((row, ri) => `<tr data-r="${ri}"><td class="rn">${ri + 1}</td>${row.map((v, ci) =>
             v === null ? `<td class="null" data-c="${ci}">NULL</td>` : `<td class="${NUM.test(s.types[ci]) ? 'num' : ''}" data-c="${ci}">${esc(v)}</td>`).join('')}</tr>`).join('');
-        const note = s.total > s.shown ? `<div class="note">Showing the first ${s.shown.toLocaleString()} of ${s.total.toLocaleString()} rows. Excel / CSV contain ${s.stored.toLocaleString()} rows.</div>` : '';
+        const note = s.total > s.shown ? `<div class="note">Showing the first ${s.shown.toLocaleString()} of ${s.total.toLocaleString()} rows (grid limit). Excel / CSV contain ${s.total > s.stored ? 'only the first ' : 'all '}${s.stored.toLocaleString()} rows${s.total > s.stored ? ' (export limit)' : ''}. Narrow the query (WHERE / TOP) to get the rest.</div>` : '';
         $('resBody').innerHTML = note + `<table class="rs"><thead><tr><th class="rn">#</th>${head}</tr></thead><tbody>${body}</tbody></table>`;
     }
     $('resTabs').addEventListener('click', e => {

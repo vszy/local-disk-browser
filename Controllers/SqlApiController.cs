@@ -65,6 +65,7 @@ namespace LocalDiskBrowser.Controllers
                 return Ok(new
                 {
                     configured = true,
+                    displayRows = DisplayRows, exportRows = ExportRows,
                     server = b.DataSource,
                     ip = await ResolveIp(b.DataSource),
                     database = b.InitialCatalog,

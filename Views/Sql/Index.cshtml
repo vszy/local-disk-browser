@@ -18,11 +18,12 @@
     <img src="~/img/sqlserver.jpg" alt="SQL Server" class="sqlLogo" />
     <span id="connInfo" class="connInfo">Loading connection...</span>
     <span id="connState" class="connState"></span>
+    <span class="brk"></span><!-- buttons go on their own line, right aligned -->
+    <span class="grow"></span>
     <select id="connSel" title="Saved databases"></select>
     <button id="bConnAdd" title="Add a database"><i class="icon-plus" style="color:#1e9e5a"></i> Add database</button>
     <button id="bConnUpd" title="Replace the saved connection string"><i class="icon-refresh-cw" style="color:#3a7bd5"></i> Update</button>
     <button id="bConnDel" title="Remove this saved database"><i class="icon-trash-2" style="color:#d9363e"></i> Forget</button>
-    <span class="grow"></span>
     <button id="bRun" title="F5"><i class="icon-play" style="color:#1e9e5a"></i> Run <span class="key">F5</span></button>
     <button id="bCancel" disabled><i class="icon-square" style="color:#d9363e"></i> Cancel</button>
     <span class="sep"></span>
@@ -37,8 +38,9 @@
         <div class="hints">
             <span><b>F5</b> run (selection if any)</span><span><b>Ctrl+3</b> top 500</span><span><b>Ctrl+4</b> top 1</span>
             <span><b>Ctrl+5</b> column info</span><span><b>Alt+F1</b> table details</span><span><b>Ctrl+F1</b> SP/view/function text</span>
-            <span><b>Ctrl+R</b> toggle results</span><span><b>Ctrl+K C / U</b> comment / uncomment</span><span><b>Ctrl+Space</b> complete</span>
+            <span><b>Ctrl+R</b> toggle results</span><span><b>Ctrl+/</b> toggle comment</span><span><b>Ctrl+K, C / U</b> comment / uncomment (Ctrl may stay held)</span><span><b>Ctrl+Space</b> complete</span>
             <span><b>GO</b> on its own line splits batches</span>
+            <span id="limits" class="lim"></span>
         </div>
         <div id="sessionBar"></div>
         <div id="edWrap"><div id="edBox"></div></div>
