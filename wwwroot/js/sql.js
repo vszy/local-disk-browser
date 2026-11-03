@@ -342,7 +342,7 @@
         $('results').hidden = $('splitter').hidden = resultsHidden;
         wrap.style.height = resultsHidden ? '' : edHeight + 'px';
         wrap.style.flex = resultsHidden ? '1 1 auto' : '0 0 auto';
-        cm.refresh();
+        cm.refresh(); paintWindow(false);
     }
     function toggleResults() { resultsHidden = !resultsHidden; applyLayout(); }
     $('splitter').addEventListener('mousedown', e => {
@@ -428,8 +428,44 @@
     const curRes = () => { const s = active(); return s && s.res; };
     function setMessages(msgs) { const s = active(); s.res = { token: null, sets: [], messages: msgs, idx: -1 }; renderResults(); }
 
+    // ---- result grid: rows ----
+    const rowHtml = (s, ri) => `<tr data-r="${ri}"${selRows.has(ri) ? ' class="sel"' : ''}><td class="rn">${ri + 1}</td>${s.rows[ri].map((v, ci) =>
+        v === null ? `<td class="null" data-c="${ci}">NULL</td>` : `<td class="${NUM.test(s.types[ci]) ? 'num' : ''}" data-c="${ci}">${esc(v)}</td>`).join('')}</tr>`;
+    const rowsHtml = (s, a, b) => { let h = ''; for (let i = a; i < b; i++) h += rowHtml(s, i); return h; };
+
+    // ---- virtual scroll: a result with thousands of rows would make the browser lag, so only the rows in view (+ a buffer)
+    // are real <tr>s; two spacer rows stand in for the rest so the scroll bar still covers the whole result.
+    // Column widths are measured once from the first rows and then fixed, otherwise they would jump while scrolling.
+    const VS_ALL = 400, VS_SAMPLE = 100, VS_BUF = 30;
+    let grid = null; // { s, tbl, rowH, n, a, b } of the result being shown (null = fully rendered)
+    function startVirtual(s) {
+        const tbl = $('resBody').querySelector('table.rs');
+        const widths = [...tbl.querySelectorAll('thead th')].map(th => Math.ceil(th.getBoundingClientRect().width));
+        const rowH = tbl.querySelector('tbody tr').getBoundingClientRect().height;
+        tbl.insertAdjacentHTML('afterbegin', '<colgroup>' + widths.map(w => `<col style="width:${w}px">`).join('') + '</colgroup>');
+        tbl.style.tableLayout = 'fixed'; tbl.style.width = widths.reduce((x, y) => x + y, 0) + 'px';
+        grid = { s, tbl, rowH, n: widths.length, a: 0, b: VS_SAMPLE };
+        paintWindow(true);
+    }
+    function paintWindow(force) {
+        const g = grid; if (!g) return;
+        const body = $('resBody'), total = g.s.rows.length;
+        const tableTop = g.tbl.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop;
+        const first = Math.max(0, Math.floor((body.scrollTop - tableTop - g.tbl.tHead.offsetHeight) / g.rowH));
+        const vis = Math.ceil(body.clientHeight / g.rowH);
+        // repaint only when the view gets close to the edge of what is rendered
+        if (!force && !(first < g.a + (g.a > 0 ? VS_BUF / 2 : 0) || first + vis > g.b - (g.b < total ? VS_BUF / 2 : 0))) return;
+        const a = Math.max(0, first - VS_BUF), b = Math.min(total, first + vis + VS_BUF);
+        const sp = h => h > 0 ? `<tr class="sp"><td colspan="${g.n}" style="height:${h}px"></td></tr>` : '';
+        g.a = a; g.b = b;
+        g.tbl.tBodies[0].innerHTML = sp(a * g.rowH) + rowsHtml(g.s, a, b) + sp((total - b) * g.rowH);
+    }
+    let vsRaf = 0;
+    $('resBody').addEventListener('scroll', () => { if (!grid || vsRaf) return; vsRaf = requestAnimationFrame(() => { vsRaf = 0; paintWindow(false); }); });
+    addEventListener('resize', () => paintWindow(false));
+
     function renderResults() {
-        const r = curRes(); selRows = new Set(); lastRow = -1;
+        const r = curRes(); selRows = new Set(); lastRow = -1; grid = null;
         updateExportButtons();
         if (!r) { $('resTabs').innerHTML = ''; $('resBody').innerHTML = '<div class="muted pad">Run a query to see results.</div>'; return; }
         $('resTabs').innerHTML = r.sets.map((s, i) => `<div class="rtab ${i === r.idx ? 'on' : ''}" data-i="${i}">Result ${i + 1} <span class="muted">(${s.total.toLocaleString()})</span></div>`).join('')
@@ -441,10 +477,12 @@
         }
         const s = r.sets[r.idx];
         const head = s.columns.map((c, i) => `<th data-c="${i}" title="${esc(s.types[i])}">${esc(c)}</th>`).join('');
-        const body = s.rows.map((row, ri) => `<tr data-r="${ri}"><td class="rn">${ri + 1}</td>${row.map((v, ci) =>
-            v === null ? `<td class="null" data-c="${ci}">NULL</td>` : `<td class="${NUM.test(s.types[ci]) ? 'num' : ''}" data-c="${ci}">${esc(v)}</td>`).join('')}</tr>`).join('');
+        const virt = s.rows.length > VS_ALL; // big result: only the visible rows are in the DOM (see paintWindow)
+        const body = rowsHtml(s, 0, virt ? VS_SAMPLE : s.rows.length);
         const note = s.total > s.shown ? `<div class="note">Showing the first ${s.shown.toLocaleString()} of ${s.total.toLocaleString()} rows (grid limit). Excel / CSV contain ${s.total > s.stored ? 'only the first ' : 'all '}${s.stored.toLocaleString()} rows${s.total > s.stored ? ' (export limit)' : ''}. Narrow the query (WHERE / TOP) to get the rest.</div>` : '';
         $('resBody').innerHTML = note + `<table class="rs"><thead><tr><th class="rn">#</th>${head}</tr></thead><tbody>${body}</tbody></table>`;
+        $('resBody').scrollTop = 0; grid = null;
+        if (virt) startVirtual(s);
     }
     $('resTabs').addEventListener('click', e => {
         const t = e.target.closest('.rtab'); const r = curRes(); if (!t || !r) return;
@@ -454,7 +492,7 @@
         $('resBody').querySelectorAll('tbody tr').forEach(tr => tr.classList.toggle('sel', selRows.has(+tr.dataset.r)));
     }
     $('resBody').addEventListener('click', e => {
-        const tr = e.target.closest('tbody tr'); if (!tr) return;
+        const tr = e.target.closest('tbody tr[data-r]'); if (!tr) return;
         const i = +tr.dataset.r;
         if (e.shiftKey && lastRow >= 0) { if (!e.ctrlKey) selRows.clear(); for (let j = Math.min(i, lastRow); j <= Math.max(i, lastRow); j++) selRows.add(j); }
         else if (e.ctrlKey) { selRows.has(i) ? selRows.delete(i) : selRows.add(i); lastRow = i; }
@@ -463,7 +501,7 @@
     });
     $('resBody').addEventListener('contextmenu', e => {
         const r = curRes(); if (!r || r.idx < 0) return;
-        const td = e.target.closest('td, th'), tr = e.target.closest('tbody tr');
+        const td = e.target.closest('td, th'), tr = e.target.closest('tbody tr[data-r]');
         if (!td) return;
         e.preventDefault();
         const col = td.dataset.c === undefined ? -1 : +td.dataset.c, s = r.sets[r.idx];

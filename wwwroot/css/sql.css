@@ -60,6 +60,7 @@ table.rs th, table.rs td { border: 1px solid #d5d5d5; padding: 2px 6px; white-sp
 table.rs td.num { text-align: right; }
 table.rs td.null { color: #999; font-style: italic; }
 table.rs .rn { color: #888; background: #f4f4f4; text-align: right; }
+table.rs tr.sp td { padding: 0; border: 0; background: none; }
 table.rs tr.sel td { background: #cfe0fc; }
 
 .listPane { flex: 0 0 300px; display: flex; flex-direction: column; border-right: 1px solid #aaa; background: #fafafa; min-height: 0; }

@@ -2,6 +2,9 @@
 
 Newest first. The current version is in `LocalDiskBrowser.csproj` and at the top of `README.md`.
 
+### 2.4.0
+SQL page: **virtual scrolling** in the result grid. Results over 400 rows only keep the rows in view (plus a buffer) in the page, so big results no longer make the browser lag. Column widths are measured from the first 100 rows and then fixed (longer values are cut with an ellipsis). Selection, copy and Excel / CSV work on the whole result as before.
+
 ### 2.3.2
 SQL page: the SQL Server logo is back, small, before the IP / database on the button line.
 
