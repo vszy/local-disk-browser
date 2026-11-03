@@ -1,7 +1,16 @@
+using Microsoft.AspNetCore.DataProtection;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddMemoryCache(); // holds the last SQL result for the Excel / CSV download
+
+// SQL editor: saved connections are encrypted with Data Protection; its keys live in App_Data/keys (DPAPI-protected on Windows).
+var dp = builder.Services.AddDataProtection().SetApplicationName("LocalDiskBrowser")
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "keys")));
+if (OperatingSystem.IsWindows()) dp.ProtectKeysWithDpapi();
+builder.Services.AddSingleton<LocalDiskBrowser.Services.SqlConnStore>();
 
 // Everything requires login except endpoints marked [AllowAnonymous] (the login page).
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)

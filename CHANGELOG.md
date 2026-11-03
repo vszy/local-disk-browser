@@ -2,6 +2,25 @@
 
 Newest first. The current version is in `LocalDiskBrowser.csproj` and at the top of `README.md`.
 
+### 2.0.0
+Breaking: **SQL Server connections are entered in the page, not in `appsettings.json`.** *Add database* takes a connection string, encrypts it in the browser (AES-GCM + RSA, so Cloudflare / proxies / logs never see it), the server tests it and stores it encrypted at rest (`App_Data/sqlconn`, Data Protection + DPAPI) under a random key. The browser keeps only that key and sends it with every call; several databases can be saved and switched in a drop-down, *Update* replaces a string, *Forget* deletes it. Each connection is tied to the user that saved it; a changed client IP only shows a warning. Replay protection (timestamp + one-time nonce), failed-key rate limit, `AttachDbFilename` rejected, optional `SqlEditor:AllowedServers`. `SqlEditor:ConnectionString` is no longer read: remove it from `appsettings.json` and add the database again in the SQL page. Keep `App_Data` when deploying.
+
+### 1.5.2
+Fix: running a query in the SQL editor while the results section is hidden (Ctrl+R) now shows it again.
+
+### 1.5.1
+SQL editor: autocomplete now pops up while typing (after a dot, or once a word has 2+ characters; not inside comments or strings). Ctrl+Space still opens it manually. (Also includes the 1.4.1 column-name fix below.)
+
+### 1.5.0
+New: **Pin in Recent**. Hover a recent folder or file and click the pin icon to keep it at the top of the Recent list. Pinned items are never trimmed by the 20-item limit and survive "Clear"; click the pin-off icon to unpin.
+
+### 1.4.1
+Fix: SQL editor autocomplete (Ctrl-Space, and after typing a dot) now suggests column names. It reads the tables named after FROM / JOIN / UPDATE / INTO in the query, loads their columns once (cached), and offers them for `alias.` / `table.` and unqualified.
+
+### 1.4.0
+New: **SQL Server editor**. The SQL Server logo button after Refresh opens its own page: server / IP / database shown at the top, query editor with F5, session tabs, GO batches, result sets with copy, Excel and CSV download, and explorer tabs for Tables, Stored Procedures, Views, Table Types, Functions and SQL Agent Jobs. All statements are allowed (risky ones ask first). The connection string is read from `SqlEditor:ConnectionString` in `appsettings.json` and never leaves the server. Every run is logged to `logs/sql-audit.log`. New package: Microsoft.Data.SqlClient.
+Repo: `appsettings.json` is no longer in git (it now holds the connection string); `appsettings.sample.json` is the template. `appsettings.Development.json` removed (it only repeated the logging levels).
+
 ### 1.3.7
 The changelog moved from `README.md` to this file (`CHANGELOG.md`).
 

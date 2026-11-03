@@ -480,3 +480,9 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Local settings: real passwords and the SQL connection string live here. Copy appsettings.sample.json to appsettings.json.
+/appsettings.json
+
+# SQL editor saved connections (encrypted) and encryption keys
+/App_Data/

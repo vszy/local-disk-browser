@@ -5,11 +5,18 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- App version: shown on the login page. Bump on EVERY change (see AGENTS.md). -->
-    <Version>1.3.7</Version>
+    <Version>2.0.0</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Saved SQL connections and encryption keys are runtime data: never publish or overwrite them. -->
+    <Content Remove="App_Data\**" />
+    <None Remove="App_Data\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.1" />
     <PackageReference Include="SharpCompress" Version="0.50.7" />
   </ItemGroup>
 

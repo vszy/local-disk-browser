@@ -25,6 +25,8 @@ input[type=text] { font: inherit; padding: 3px 5px; }
 #toolbar form button[data-tip]:hover::after { left: auto; right: 0; transform: none; }
 .blabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
+#bSql img { display: block; height: 24px; }
+#bSql:hover:not(:disabled) img { opacity: .7; }
 #cfHint { color: #8a4b00; background: #fff3cd; border: 1px solid #e0c36a; padding: 2px 8px; font-size: 12px; }
 #toolbar, #actions { display: flex; gap: 4px; padding: 4px; border-bottom: 1px solid #aaa; background: #f0f0f0; align-items: center; flex-wrap: wrap; }
 #addr { flex: 1 1 300px; min-width: 150px; }
@@ -47,6 +49,10 @@ input[type=text] { font: inherit; padding: 3px 5px; }
 .rec { padding: 3px 8px; cursor: pointer; border-bottom: 1px solid #e4e4e4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rec:hover { background: #e8f0fe; }
 .rec .sub { color: #555; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
+.rec .pinbtn { float: right; color: #999; visibility: hidden; padding: 0 2px; }
+.rec:hover .pinbtn, .rec.pinned .pinbtn { visibility: visible; }
+.rec.pinned .pinbtn { color: #3a7bd5; }
+.rec .pinbtn:hover { color: #d33; }
 #recent .none { padding: 3px 8px; }
 
 #content { flex: 1; overflow: auto; position: relative; }

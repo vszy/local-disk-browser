@@ -1,0 +1,91 @@
+/* SQL Server editor page. Base look (buttons, status bar, context menu) comes from browser.css. */
+.grow { flex: 1; }
+.muted { color: #777; }
+.pad { padding: 6px 8px; }
+.bad { color: #b00; }
+
+#sqlTop { display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: #f0f0f0; border-bottom: 1px solid #aaa; flex-wrap: wrap; }
+.sqlLogo { height: 30px; }
+.connInfo { font-weight: bold; }
+.connInfo .k { color: #555; font-weight: normal; }
+.connState { color: #555; }
+.connState.ok { color: #1e7e45; font-weight: bold; }
+.connState.bad { color: #b00; font-weight: bold; }
+.key { font-size: 10px; color: #666; border: 1px solid #bbb; border-radius: 3px; padding: 0 3px; margin-left: 3px; }
+
+#sqlTabs { display: flex; gap: 2px; padding: 4px 8px 0; background: #f7f7f7; border-bottom: 1px solid #aaa; flex-wrap: wrap; }
+#sqlTabs .tab { padding: 4px 12px; cursor: pointer; border: 1px solid #ccc; border-bottom: 0; background: #eee; border-radius: 3px 3px 0 0; white-space: nowrap; }
+#sqlTabs .tab:hover { background: #e8f0fb; }
+#sqlTabs .tab.on { background: #fff; font-weight: bold; position: relative; top: 1px; }
+
+#sqlMain { flex: 1; min-height: 0; display: flex; }
+.pane { flex: 1; min-width: 0; min-height: 0; display: flex; }
+.pane[hidden] { display: none; }
+#paneEditor { flex-direction: column; }
+
+.hints { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 3px 8px; background: #fafafa; border-bottom: 1px solid #ddd; color: #555; font-size: 11px; }
+.hints b { color: #222; border: 1px solid #ccc; border-radius: 3px; padding: 0 3px; background: #fff; font-weight: normal; }
+
+#sessionBar { display: flex; align-items: center; gap: 2px; padding: 3px 8px 0; background: #f4f4f4; flex-wrap: wrap; }
+.sess { display: flex; align-items: center; gap: 6px; padding: 2px 8px; cursor: pointer; border: 1px solid #ccc; border-bottom: 0; background: #e8e8e8; border-radius: 3px 3px 0 0; }
+.sess.on { background: #fff; font-weight: bold; }
+.sess .x { color: #888; font-weight: normal; }
+.sess .x:hover { color: #d33; }
+#bAddSess { padding: 0 8px; margin-left: 4px; }
+
+#edWrap { min-height: 60px; border-top: 1px solid #ccc; }
+#edBox, #edBox .CodeMirror { height: 100%; }
+.CodeMirror { font: 13px Consolas, "Courier New", monospace; }
+#splitter { flex: 0 0 6px; cursor: row-resize; background: #e4e4e4; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; }
+#splitter:hover { background: #bcd0ee; }
+
+#results { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+#results[hidden], #splitter[hidden] { display: none; }
+#resTabs { display: flex; align-items: center; gap: 2px; padding: 3px 8px 0; background: #f4f4f4; border-bottom: 1px solid #ccc; flex-wrap: wrap; }
+.rtab { padding: 2px 10px; cursor: pointer; border: 1px solid #ccc; border-bottom: 0; background: #e8e8e8; border-radius: 3px 3px 0 0; }
+.rtab.on { background: #fff; font-weight: bold; }
+#resBody { flex: 1; min-height: 0; overflow: auto; }
+.note { padding: 3px 8px; background: #fff3cd; color: #8a4b00; border-bottom: 1px solid #e0c36a; position: sticky; left: 0; }
+.msgs { margin: 0; padding: 8px; font: 12px Consolas, "Courier New", monospace; white-space: pre-wrap; }
+
+table.rs { border-collapse: collapse; font: 12px Consolas, "Courier New", monospace; }
+table.rs th { position: sticky; top: 0; background: #e9eef7; text-align: left; z-index: 1; }
+table.rs th, table.rs td { border: 1px solid #d5d5d5; padding: 2px 6px; white-space: nowrap; max-width: 420px; overflow: hidden; text-overflow: ellipsis; }
+table.rs td.num { text-align: right; }
+table.rs td.null { color: #999; font-style: italic; }
+table.rs .rn { color: #888; background: #f4f4f4; text-align: right; }
+table.rs tr.sel td { background: #cfe0fc; }
+
+.listPane { flex: 0 0 300px; display: flex; flex-direction: column; border-right: 1px solid #aaa; background: #fafafa; min-height: 0; }
+.listHead { font-weight: bold; padding: 4px 8px; background: #e4e4e4; }
+.listSearch { display: flex; gap: 4px; padding: 4px; }
+.listSearch input { flex: 1; min-width: 0; }
+#listItems { flex: 1; overflow: auto; }
+.item { padding: 3px 8px; cursor: pointer; border-bottom: 1px solid #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item:hover { background: #e8f0fe; }
+.item.on { background: #cfe0fc; }
+#detail { flex: 1; min-width: 0; overflow: auto; padding: 8px 12px; }
+.dhead { display: flex; align-items: center; gap: 6px; }
+.dhead h3 { margin: 4px 0; }
+#detail h4 { margin: 14px 0 4px; }
+table.def { border-collapse: collapse; margin-bottom: 6px; }
+table.def th, table.def td { border: 1px solid #d5d5d5; padding: 2px 8px; text-align: left; vertical-align: top; }
+table.def th { background: #e9eef7; }
+table.def td { white-space: pre-wrap; max-width: 700px; word-break: break-word; }
+.scriptBox { position: relative; border: 1px solid #ccc; background: #fafafa; margin: 6px 0; }
+.scriptBox pre { margin: 0; padding: 8px; font: 12px Consolas, "Courier New", monospace; overflow: auto; max-height: 70vh; }
+.scriptBox .copy { position: absolute; right: 6px; top: 6px; }
+
+#status.up #stLeft { background: #fff3cd; color: #0a4fb3; font-weight: bold; padding: 0 6px; }
+#stRight { padding-left: 12px; white-space: nowrap; }
+
+/* connection selector + "add database" dialog */
+#connSel { max-width: 220px; }
+#connPanel { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; z-index: 50; }
+#connPanel[hidden] { display: none; }
+#connPanel .box { background: #fff; border: 1px solid #888; padding: 12px 16px; width: min(620px, 94vw); display: flex; flex-direction: column; gap: 8px; }
+#connPanel h3 { margin: 0; }
+#connPanel label { display: flex; flex-direction: column; gap: 2px; }
+#connPanel textarea, #connPanel input { font: 13px Consolas, "Courier New", monospace; box-sizing: border-box; width: 100%; }
+#connPanel .btns { display: flex; gap: 6px; }
+#connPanel .small { font-size: 11px; }

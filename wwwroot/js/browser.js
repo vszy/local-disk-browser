@@ -107,7 +107,8 @@
     }
 
     // ---------- recent folders and files: one list, kept in this browser only (localStorage), newest first ----------
-    // Entries are { k: 'dirs'|'files', p: path }.
+    // Entries are { k: 'dirs'|'files', p: path, pin?: true }. Pinned entries are shown first and are never
+    // trimmed by RECENT_MAX or emptied by "Clear" (only unpinning or removing a dead folder drops them).
     const RECENT_MAX = 20;
     function loadRecent() {
         try {
@@ -118,19 +119,29 @@
     function saveRecent(r) { try { localStorage.setItem('ldb.recent', JSON.stringify(r)); } catch { } }
     const sameRecent = (x, kind, path) => x.k === kind && x.p.toLowerCase() === path.toLowerCase();
     function addRecent(kind, path) {
-        const r = [{ k: kind, p: path }, ...loadRecent().filter(x => !sameRecent(x, kind, path))].slice(0, RECENT_MAX);
+        const all = loadRecent(), old = all.find(x => sameRecent(x, kind, path));
+        const entry = { k: kind, p: path }; if (old && old.pin) entry.pin = true;
+        const rest = all.filter(x => x !== old);
+        let n = 0; // keep every pinned entry, trim only the unpinned ones
+        const r = [entry, ...rest].filter(x => x.pin || ++n <= RECENT_MAX);
         saveRecent(r); renderRecent();
+    }
+    function togglePin(kind, path) {
+        const r = loadRecent(), x = r.find(y => sameRecent(y, kind, path));
+        if (x) { if (x.pin) delete x.pin; else x.pin = true; saveRecent(r); renderRecent(); }
     }
     function removeRecent(kind, path) {
         saveRecent(loadRecent().filter(x => !sameRecent(x, kind, path))); renderRecent();
     }
     function renderRecent() {
-        const r = loadRecent();
-        const row = ({ k, p }) => {
+        const all = loadRecent();
+        const r = [...all.filter(x => x.pin), ...all.filter(x => !x.pin)]; // pinned on top, order kept inside each group
+        const row = ({ k, p, pin }) => {
             const cut = p.replace(/\\+$/, '').lastIndexOf('\\');
             const name = cut < 0 ? p : p.slice(cut + 1), parent = cut < 0 ? '' : p.slice(0, cut + 1);
             const ext = k === 'files' ? (p.match(/\.[^.\\]+$/) || [''])[0].toLowerCase() : '';
-            return `<div class="rec" data-k="${k}" data-p="${esc(p)}" title="${esc(p)}">${k === 'dirs' ? FOLDER_ICON : (ICONS[ext] || FILE_ICON)} ${esc(name)}<div class="sub">${esc(parent)}</div></div>`;
+            const pinBtn = `<i class="pinbtn icon-${pin ? 'pin-off' : 'pin'}" title="${pin ? 'Unpin' : 'Pin to top'}"></i>`;
+            return `<div class="rec${pin ? ' pinned' : ''}" data-k="${k}" data-p="${esc(p)}" title="${esc(p)}">${pinBtn}${k === 'dirs' ? FOLDER_ICON : (ICONS[ext] || FILE_ICON)} ${esc(name)}<div class="sub">${esc(parent)}</div></div>`;
         };
         $('recent').innerHTML = r.length ? r.map(row).join('') : '<div class="sub none">None yet</div>';
     }
@@ -621,13 +632,15 @@
     $('bUpload').onclick = () => pickAndUpload(false); $('bUploadDir').onclick = () => pickAndUpload(true);
     $('bProps').onclick = props;
     $('bRefresh').onclick = async () => { await loadDrivesAndItems(); await reload(); };
+    $('bSql').onclick = () => window.open(BASE + 'Sql', '_blank'); // the SQL Server editor is its own page
     $('chkHidden').onchange = () => reload();
     // Recent lists: a folder that no longer opens is dropped from the list; "Clear" empties one list.
     $('sidebar').addEventListener('click', async e => {
         const c = e.target.closest('.clr');
-        if (c) { saveRecent([]); return renderRecent(); }
+        if (c) { saveRecent(loadRecent().filter(x => x.pin)); return renderRecent(); }
         const el = e.target.closest('.rec'); if (!el) return;
         const p = el.dataset.p;
+        if (e.target.closest('.pinbtn')) return togglePin(el.dataset.k, p);
         if (el.dataset.k === 'dirs') { if (!(await nav(p))) removeRecent('dirs', p); }
         else openItem({ isDir: false, path: p });
     });
