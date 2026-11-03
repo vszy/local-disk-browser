@@ -10,7 +10,7 @@ Deployed to IIS (e.g. `https://your-server.example.com/Deployer/`, hosted as a *
 ## Mandatory rules for EVERY change
 
 1. **Bump the version** in `LocalDiskBrowser.csproj` (`<Version>`): patch (x.y.Z) for fixes, minor (x.Y.0) for new features, major for breaking changes. The login page shows it automatically (`Models/AppInfo.cs`).
-2. **Update `README.md`**: the "Current version" line, the Features / Configuration sections if behaviour changed, and add an entry at the top of the **Changelog** (newest first) describing the change.
+2. **Update `README.md`**: the "Current version" line and the Features / Configuration sections if behaviour changed. **Add an entry at the top of `CHANGELOG.md`** (newest first) describing the change.
 3. **Update this file** if you add a convention, a gotcha, or change the structure.
 4. Build (`dotnet build`) and, where possible, test against the running app before saying a change is done. Say plainly what was and was not tested (UI behaviour cannot be clicked through from the terminal).
 
