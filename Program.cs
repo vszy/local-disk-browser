@@ -11,6 +11,9 @@ var dp = builder.Services.AddDataProtection().SetApplicationName("LocalDiskBrows
     .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "keys")));
 if (OperatingSystem.IsWindows()) dp.ProtectKeysWithDpapi();
 builder.Services.AddSingleton<LocalDiskBrowser.Services.SqlConnStore>();
+// SQL profiler: Extended Events sessions, dropped on stop / tab close / lease expiry / shutdown.
+builder.Services.AddSingleton<LocalDiskBrowser.Services.SqlProfilerService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<LocalDiskBrowser.Services.SqlProfilerService>());
 
 // Everything requires login except endpoints marked [AllowAnonymous] (the login page).
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)

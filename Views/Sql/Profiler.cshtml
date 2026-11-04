@@ -1,0 +1,41 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>SQL Profiler</title>
+    <meta name="app-base" content="@Url.Content("~/")" />
+    <link rel="stylesheet" href="~/lib/lucide/lucide.css" />
+    <link rel="stylesheet" href="~/css/browser.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/sql.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/profiler.css" asp-append-version="true" />
+</head>
+<body>
+<div id="pfTop">
+    <img src="~/img/sqlserver.jpg" alt="SQL Server" class="sqlLogo" />
+    <span id="pfConn" class="connInfo"></span>
+    <span class="sep"></span>
+    <button id="bStart" title="Start capturing"><i class="icon-play" style="color:#1e9e5a"></i> Start</button>
+    <button id="bStop" title="Stop profiler (ends the capture on the server)" disabled><i class="icon-square" style="color:#d9363e"></i> Stop</button>
+    <button id="bPause" title="Pause display (the capture keeps running)" disabled><i class="icon-pause" style="color:#e0a800"></i> Pause</button>
+    <button id="bClear" title="Clear the list"><i class="icon-trash-2" style="color:#666"></i> Clear</button>
+    <span class="sep"></span>
+    <label><input type="checkbox" id="optThisDb" checked /> this database only</label>
+    <label>min duration <input type="number" id="optMin" value="0" min="0" max="3600000" /> ms</label>
+    <input id="pfFilter" type="text" placeholder="Filter text..." spellcheck="false" />
+    <span id="pfState" class="pfState"></span>
+</div>
+<div id="pfMain">
+    <div id="pfList"><table><thead><tr>
+        <th>Time</th><th>Type</th><th class="n">Duration ms</th><th class="n">CPU ms</th><th class="n">Reads</th><th class="n">Rows</th>
+        <th>Database</th><th>Login</th><th>Host</th><th>App</th><th class="sqlc">SQL</th>
+    </tr></thead><tbody id="pfRows"></tbody></table><div id="pfEmpty" class="muted pad">Not running.</div></div>
+    <div id="pfSplit" title="Drag to resize"></div>
+    <div id="pfDetail"><div class="muted pad">Click a row to see its SQL.</div></div>
+</div>
+<div id="status"><span id="stLeft"></span><span id="busy" hidden></span><span id="stRight"></span></div>
+<script src="~/js/profiler.js" asp-append-version="true"></script>
+</body>
+</html>

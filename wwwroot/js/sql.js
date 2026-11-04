@@ -395,6 +395,11 @@
     }
     $('bRun').onclick = () => run();
     $('bCancel').onclick = () => { if (abortCtl) abortCtl.abort(); };
+    // The profiler runs in its own tab (page Sql/Profiler); closing that tab stops it. The key goes in the #hash so it is never in a URL the server sees.
+    $('bProfiler').onclick = () => {
+        if (!CUR) return status('Add a database first.', true);
+        window.open(BASE + 'Sql/Profiler#conn=' + encodeURIComponent(CUR.key), '_blank', 'noopener');
+    };
 
     // Shortcut queries. Names come from the selection in the editor.
     const selText = () => cm.getSelection().trim();

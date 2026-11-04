@@ -1,0 +1,24 @@
+/* SQL profiler page. Base look comes from browser.css and sql.css. */
+#pfTop { display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: #f0f0f0; border-bottom: 1px solid #aaa; flex-wrap: wrap; }
+#pfTop label { display: flex; align-items: center; gap: 3px; }
+#pfTop input[type=number] { width: 70px; }
+#pfFilter { width: 200px; }
+.pfState { margin-left: auto; font-weight: bold; }
+.pfState.run { color: #1e7e45; }
+.pfState.off { color: #777; }
+#pfMain { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+#pfList { flex: 1; min-height: 40px; overflow: auto; }
+#pfList table { border-collapse: collapse; width: 100%; font-size: 12px; }
+#pfList th { position: sticky; top: 0; background: #f4f4f4; border-bottom: 1px solid #aaa; text-align: left; padding: 2px 6px; white-space: nowrap; }
+#pfList td { padding: 1px 6px; border-bottom: 1px solid #eee; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+#pfList th.n, #pfList td.n { text-align: right; }
+#pfList td.sqlc { max-width: none; width: 100%; font-family: Consolas, "Courier New", monospace; }
+#pfRows tr { cursor: default; }
+#pfRows tr:hover { background: #eef4fd; }
+#pfRows tr.sel { background: #cfe0f7; }
+#pfRows tr.slow td.n:nth-child(3) { color: #b00; font-weight: bold; }
+#pfSplit { flex: 0 0 6px; cursor: row-resize; background: #e4e4e4; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; }
+#pfSplit:hover { background: #bcd0ee; }
+#pfDetail { flex: 0 0 180px; overflow: auto; padding: 4px 8px; }
+#pfDetail pre { margin: 4px 0 0; white-space: pre-wrap; word-break: break-word; font: 13px Consolas, "Courier New", monospace; }
+#pfDetail .meta { color: #555; }

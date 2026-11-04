@@ -2,6 +2,9 @@
 
 Newest first. The current version is in `LocalDiskBrowser.csproj` and at the top of `README.md`.
 
+### 2.5.0
+SQL page: **Profiler** button. It opens a new browser tab (`/Sql/Profiler`) that shows the statements other clients run on the server (time, duration, CPU, reads, rows, database, login, host, app, SQL) using an Extended Events session (SQL Server 2012+, needs `ALTER ANY EVENT SESSION` and `VIEW SERVER STATE`; Azure SQL Database is not supported). Options: this database only, minimum duration; filter, pause, clear, copy SQL, and a Stop button. The session is dropped on Stop, when the tab is closed, when the tab stops polling for 2 minutes (crash / no network), at app shutdown, and at the next app start for leftovers. New files: `Services/SqlProfilerService.cs`, `Views/Sql/Profiler.cshtml`, `wwwroot/js/profiler.js`, `wwwroot/css/profiler.css`.
+
 ### 2.4.0
 SQL page: **virtual scrolling** in the result grid. Results over 400 rows only keep the rows in view (plus a buffer) in the page, so big results no longer make the browser lag. Column widths are measured from the first 100 rows and then fixed (longer values are cut with an ellipsis). Selection, copy and Excel / CSV work on the whole result as before.
 

@@ -15,7 +15,7 @@ A plain, functional web-based file manager for the disks of the machine it runs 
 Browse drives and folders, copy / move / delete, zip / extract, edit text files, upload and download, view properties.
 No fancy design on purpose. Protected by a login.
 
-**Current version: 2.4.0** (shown on the login page; defined in `LocalDiskBrowser.csproj`)
+**Current version: 2.5.0** (shown on the login page; defined in `LocalDiskBrowser.csproj`)
 
 ## Features
 
@@ -32,7 +32,7 @@ No fancy design on purpose. Protected by a login.
 - **Upload (your PC -> server):** Ctrl+V of files copied on your computer, drag-and-drop (files and folders), *Upload Files* / *Upload Folder*. Sent in 4 MB chunks so proxy / IIS request-size limits do not apply. Never overwrites (adds `- Copy`).
 - **Download (server -> your PC):** one file downloads directly; folders or several items download as one `.zip`.
 - **Properties:** size (folders are counted recursively), counts, dates, attributes; toggle Read-only / Hidden.
-- **SQL Server editor:** the SQL Server logo button after *Refresh* opens a separate page. It shows the server, its IP and the database (never the password), then offers: a query editor (F5 runs the selection or everything; `GO` splits batches; all statements are allowed, risky ones - UPDATE/DELETE without WHERE, TRUNCATE, DROP - ask first), several session tabs, result sets with copy cell/row/column, **Excel and CSV download**, and explorer tabs for **Tables, Stored Procedures, Views, Table Types, Functions and SQL Agent Jobs** (definitions, CREATE script, columns/keys/indexes). Shortcuts: F5, Ctrl+3 / Ctrl+4 (top 500 / top 1 of the selected table), Ctrl+5 (column info), Alt+F1 / Ctrl+F1 (open the selected table / SP-view-function), Ctrl+R (toggle results), Ctrl+/ (toggle comment), Ctrl+K C / U (comment / uncomment), Ctrl+Space (autocomplete; it also pops up while typing). **Databases:** click *Add database* and paste a connection string (encrypted in the browser, tested, saved encrypted on the server); pick between saved databases in the drop-down, *Update* replaces the string, *Forget* deletes it. A warning shows when a saved database is opened from a different client IP than last time (warning only).
+- **SQL Server editor:** the SQL Server logo button after *Refresh* opens a separate page. It shows the server, its IP and the database (never the password), then offers: a query editor (F5 runs the selection or everything; `GO` splits batches; all statements are allowed, risky ones - UPDATE/DELETE without WHERE, TRUNCATE, DROP - ask first), several session tabs, result sets with copy cell/row/column, **Excel and CSV download**, and explorer tabs for **Tables, Stored Procedures, Views, Table Types, Functions and SQL Agent Jobs** (definitions, CREATE script, columns/keys/indexes). Shortcuts: F5, Ctrl+3 / Ctrl+4 (top 500 / top 1 of the selected table), Ctrl+5 (column info), Alt+F1 / Ctrl+F1 (open the selected table / SP-view-function), Ctrl+R (toggle results), Ctrl+/ (toggle comment), Ctrl+K C / U (comment / uncomment), Ctrl+Space (autocomplete; it also pops up while typing). **Databases:** click *Add database* and paste a connection string (encrypted in the browser, tested, saved encrypted on the server); pick between saved databases in the drop-down, *Update* replaces the string, *Forget* deletes it. A warning shows when a saved database is opened from a different client IP than last time (warning only). **Profiler:** the *Profiler* button opens a new tab that lists, live, the statements other clients run on the server (Extended Events; needs `ALTER ANY EVENT SESSION` + `VIEW SERVER STATE`; not Azure SQL Database). Options: this database only, minimum duration; filter, pause display, clear, copy SQL, **Stop**. Closing the tab stops it; if the tab dies, the server drops the session after 2 minutes without polling.
 - **Login:** username + password from `appsettings.json`. "Remember me" keeps you logged in for 1 day, even after closing the browser; without it the login ends when the browser closes (or after 8 h idle).
 
 Not possible in a browser: putting server files on your computer's clipboard (use Download instead).
@@ -78,10 +78,12 @@ Controllers/FsController.cs      all file operations (REST API under /api/fs)
 Controllers/AccountController.cs login / logout (cookie auth)
 Controllers/HomeController.cs    main page and editor page
 Controllers/SqlController.cs     SQL Server editor page
-Controllers/SqlApiController.cs  SQL Server API (/api/sql: pubkey, save, forget, connect, query, objects, definition, export)
+Controllers/SqlApiController.cs  SQL Server API (/api/sql: pubkey, save, forget, connect, query, objects, definition, export, prof/start|poll|stop)
+Services/SqlProfilerService.cs   SQL profiler (Extended Events sessions, lease cleanup)
 Services/SqlConnStore.cs         saved SQL connections (encrypted files in App_Data) + RSA key for the browser envelope
 Views/Home/Index.cshtml          file browser page
 Views/Home/Editor.cshtml         text editor page
+Views/Sql/Profiler.cshtml        SQL profiler page (wwwroot/js/profiler.js, wwwroot/css/profiler.css)
 Views/Sql/Index.cshtml           SQL Server editor page (wwwroot/js/sql.js, wwwroot/css/sql.css)
 appsettings.sample.json          template for appsettings.json (which is git-ignored)
 Views/Account/Login.cshtml       login page (shows the version)

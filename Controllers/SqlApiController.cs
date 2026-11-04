@@ -18,6 +18,8 @@ namespace LocalDiskBrowser.Controllers
     public record SqlObjectsRequest(string Kind, string? Conn = null);
     public record SqlDefRequest(string Kind, string Name, string? Conn = null);
     public record SqlConnRequest(string? Conn = null);
+public record SqlProfStartRequest(string? Conn = null, bool ThisDb = true, int MinMs = 0);
+public record SqlProfRequest(string Id, string? Conn = null);
     // Encrypted in the browser: AES-256-GCM payload + its key wrapped with the server's RSA public key.
     public record SqlSaveRequest(string KeyId, string WrappedKey, string Iv, string Ciphertext, string? Conn = null);
     public record SqlSavePayload(string? ConnectionString, string? Label, long Ts, string? Nonce);
@@ -32,10 +34,11 @@ namespace LocalDiskBrowser.Controllers
         private readonly IConfiguration _config;
         private readonly IMemoryCache _cache;
         private readonly SqlConnStore _store;
+        private readonly SqlProfilerService _prof;
         private static readonly object AuditLock = new();
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-        public SqlApiController(IConfiguration config, IMemoryCache cache, SqlConnStore store) { _config = config; _cache = cache; _store = store; }
+        public SqlApiController(IConfiguration config, IMemoryCache cache, SqlConnStore store, SqlProfilerService prof) { _config = config; _cache = cache; _store = store; _prof = prof; }
 
         // Set by Use() for the current request.
         private string? _cs, _key;
@@ -582,6 +585,44 @@ namespace LocalDiskBrowser.Controllers
                 w.Write("</sheetData></worksheet>");
             }
             return ms.ToArray();
+        }
+
+        // ---------- profiler (Extended Events, see SqlProfilerService) ----------
+
+        [HttpPost("prof/start")]
+        public async Task<IActionResult> ProfStart(SqlProfStartRequest req, CancellationToken ct)
+        {
+            if (Use(req.Conn) is { } nc) return nc;
+            try
+            {
+                var (id, db) = await _prof.StartAsync(User.Identity?.Name ?? "", req.Conn!, ConnStr!, req.ThisDb, req.MinMs, ct);
+                Audit("profiler-start", $"{(db ?? "all databases")}, min {req.MinMs} ms"); // never the captured SQL
+                return Ok(new { id, database = db, leaseSeconds = SqlProfilerService.LeaseSeconds });
+            }
+            catch (Exception ex) when (ex is InvalidOperationException) { return BadRequest(new { error = ex.Message }); }
+            catch (Exception ex) { return Fail(ex); }
+        }
+
+        [HttpPost("prof/poll")]
+        public async Task<IActionResult> ProfPoll(SqlProfRequest req, CancellationToken ct)
+        {
+            if (Use(req.Conn) is { } nc) return nc;
+            try
+            {
+                var (gone, events, more) = await _prof.PollAsync(User.Identity?.Name ?? "", req.Id, ct);
+                return Ok(new { gone, events, more });
+            }
+            catch (Exception ex) { return Fail(ex); }
+        }
+
+        // Stopping an unknown id is fine (already stopped). Called by the Stop button and when the profiler tab closes.
+        [HttpPost("prof/stop")]
+        public async Task<IActionResult> ProfStop(SqlProfRequest req)
+        {
+            if (Use(req.Conn) is { } nc) return nc;
+            var ok = await _prof.StopAsync(User.Identity?.Name ?? "", req.Id);
+            if (ok) Audit("profiler-stop", "");
+            return ok ? Ok(new { ok = true }) : BadRequest(new { error = "Could not stop the profiler session on the server. It is dropped automatically within 2 minutes." });
         }
 
         // ---------- helpers ----------
