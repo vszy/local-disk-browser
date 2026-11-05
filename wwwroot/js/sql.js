@@ -226,6 +226,9 @@
             'Ctrl-R': () => toggleResults(), 'Ctrl-/': () => toggleComment(), 'Ctrl-K C': () => commentSel(true), 'Ctrl-K U': () => commentSel(false),
             'Ctrl-K Ctrl-C': () => commentSel(true), 'Ctrl-K Ctrl-U': () => commentSel(false), // SSMS style: Ctrl stays held
             'Ctrl-Space': () => showHint(),
+            // Find / replace (CodeMirror search addon). Ctrl-R is taken by the results toggle, so replace is Ctrl-H (SSMS style) and Ctrl-Shift-F.
+            'Ctrl-F': 'findPersistent', 'Ctrl-H': 'replace', 'Shift-Ctrl-F': 'replace',
+            F3: 'findNext', 'Shift-F3': 'findPrev', 'Ctrl-G': 'findNext', 'Shift-Ctrl-G': 'findPrev', 'Alt-G': 'jumpToLine',
             Tab: c => c.somethingSelected() ? c.indentSelection('add') : c.replaceSelection('    ', 'end'),
             'Shift-Tab': c => c.indentSelection('subtract')
         }

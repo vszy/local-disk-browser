@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="~/lib/lucide/lucide.css" />
     <link rel="stylesheet" href="~/lib/codemirror/codemirror.css" />
     <link rel="stylesheet" href="~/lib/codemirror/addon/show-hint.css" />
+    <link rel="stylesheet" href="~/lib/codemirror/addon/dialog.css" />
     <link rel="stylesheet" href="~/css/browser.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/sql.css" asp-append-version="true" />
 </head>
@@ -39,7 +40,7 @@
         <div class="hints">
             <span><b>F5</b> run (selection if any)</span><span><b>Ctrl+3</b> top 500</span><span><b>Ctrl+4</b> top 1</span>
             <span><b>Ctrl+5</b> column info</span><span><b>Alt+F1</b> table details</span><span><b>Ctrl+F1</b> SP/view/function text</span>
-            <span><b>Ctrl+R</b> toggle results</span><span><b>Ctrl+/</b> toggle comment</span><span><b>Ctrl+K, C / U</b> comment / uncomment (Ctrl may stay held)</span><span><b>Ctrl+Space</b> complete</span>
+            <span><b>Ctrl+R</b> toggle results</span><span><b>Ctrl+/</b> toggle comment</span><span><b>Ctrl+K, C / U</b> comment / uncomment (Ctrl may stay held)</span><span><b>Ctrl+Space</b> complete</span><span><b>Ctrl+F</b> find</span><span><b>Ctrl+H</b> replace</span>
             <span><b>GO</b> on its own line splits batches</span>
         </div>
         <div id="sessionBar"></div>
@@ -81,7 +82,7 @@
 
 <script src="~/lib/codemirror/codemirror.js"></script>
 <script src="~/lib/codemirror/mode/sql.js"></script>
-@foreach (var a in new[] { "searchcursor", "search", "dialog", "matchbrackets", "closebrackets", "active-line", "comment", "show-hint", "sql-hint" })
+@foreach (var a in new[] { "searchcursor", "search", "dialog", "jump-to-line", "matchbrackets", "closebrackets", "active-line", "comment", "show-hint", "sql-hint" })
 {
     <script src="~/lib/codemirror/addon/@(a).js"></script>
 }

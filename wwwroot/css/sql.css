@@ -42,6 +42,14 @@
 #edWrap { min-height: 60px; border-top: 1px solid #ccc; }
 #edBox, #edBox .CodeMirror { height: 100%; }
 .CodeMirror { font: 13px Consolas, "Courier New", monospace; }
+/* Find / replace box: a small bordered panel at the top right of the editor instead of a full-width bar */
+.CodeMirror-dialog.CodeMirror-dialog-top {
+    left: auto; right: 18px; top: 4px; width: auto; max-width: 90%;
+    background: #fff; color: #222; border: 1px solid #888; border-radius: 3px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.25); padding: 4px 8px;
+}
+.CodeMirror-dialog input { border: 1px solid #bbb; background: #fff; padding: 2px 4px; width: 16em; }
+.CodeMirror-dialog input:focus { border-color: #4a90d9; }
 #splitter { flex: 0 0 6px; cursor: row-resize; background: #e4e4e4; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; }
 #splitter:hover { background: #bcd0ee; }
 

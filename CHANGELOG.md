@@ -2,6 +2,12 @@
 
 Newest first. The current version is in `LocalDiskBrowser.csproj` and at the top of `README.md`.
 
+### 2.6.1
+SQL editor: the find / replace box is now a small bordered panel at the top right of the editor (was a full-width bar). Style only, in `sql.css`.
+
+### 2.6.0
+SQL editor: **find and replace**. Ctrl+F opens find (Enter / Shift+Enter or F3 / Shift+F3 for next / previous, Ctrl+G also works), Ctrl+H or Ctrl+Shift+F opens replace, Alt+G jumps to a line. Uses the local CodeMirror search addon; added the missing `dialog.css` link so the find box is styled.
+
 ### 2.5.0
 SQL page: **Profiler** button. It opens a new browser tab (`/Sql/Profiler`) that shows the statements other clients run on the server (time, duration, CPU, reads, rows, database, login, host, app, SQL) using an Extended Events session (SQL Server 2012+, needs `ALTER ANY EVENT SESSION` and `VIEW SERVER STATE`; Azure SQL Database is not supported). Options: this database only, minimum duration; filter, pause, clear, copy SQL, and a Stop button. The session is dropped on Stop, when the tab is closed, when the tab stops polling for 2 minutes (crash / no network), at app shutdown, and at the next app start for leftovers. New files: `Services/SqlProfilerService.cs`, `Views/Sql/Profiler.cshtml`, `wwwroot/js/profiler.js`, `wwwroot/css/profiler.css`.
 

@@ -9,13 +9,25 @@
 | _ )_ _ _____ __ _____ ___ _ _
 | _ \ '_/ _ \ V  V (_-</ -_) '_|
 |___/_| \___/\_/\_//__/\___|_|
+ ___   ___  _
+/ __| / _ \| |
+\__ \| (_) | |__
+|___/ \__\_\____|
+ ___
+/ __| ___ _ ___ _____ _ _
+\__ \/ -_) '_\ V / -_) '_|
+|___/\___|_|  \_/\___|_|
+ ___    _ _ _
+| __|__| (_) |_ ___ _ _
+| _|/ _` | |  _/ _ \ '_|
+|___\__,_|_|\__\___/_|
 ```
 
 A plain, functional web-based file manager for the disks of the machine it runs on (ASP.NET Core 8 MVC).
 Browse drives and folders, copy / move / delete, zip / extract, edit text files, upload and download, view properties.
 No fancy design on purpose. Protected by a login.
 
-**Current version: 2.5.0** (shown on the login page; defined in `LocalDiskBrowser.csproj`)
+**Current version: 2.6.1** (shown on the login page; defined in `LocalDiskBrowser.csproj`)
 
 ## Features
 
