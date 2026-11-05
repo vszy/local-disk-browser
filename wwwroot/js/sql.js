@@ -609,7 +609,7 @@
         if (kind === 'tables') h += `<button id="bTop">Select Top 500</button>`;
         h += '</div>';
         if (kind === 'tables' || kind === 'tabletypes') {
-            if (c.showScript) h += `<div class="scriptBox"><button class="copy" data-copy="script">Copy</button><pre>${esc(createScript(name, d, kind === 'tabletypes'))}</pre></div>`;
+            if (c.showScript) h += codeBox('script');
             h += '<h4>Columns</h4>' + (kind === 'tables'
                 ? table(['Column', 'Type', 'Size', 'Nullable', 'Identity', 'Default'], d.columns, r => [r.ColumnName, r.DataType, r.Size, yn(r.IsNullable), yn(r.IsIdentity), r.DefaultValue ?? ''])
                 : table(['Column', 'Type', 'Size', 'Nullable'], d.columns, r => [r.ColumnName, r.DataType, r.Size, yn(r.IsNullable)]));
@@ -621,16 +621,21 @@
             h += '<h4>Steps</h4>' + table(['#', 'Step Name', 'Subsystem', 'Command'], d.steps, r => [r.StepId, r.StepName, r.Subsystem, r.Command]).replace('<td>', '<td>');
             if (d.schedules.length) h += '<h4>Schedules</h4>' + table(['Schedule', 'Enabled', 'Frequency', 'Start Time'], d.schedules, r => [r.ScheduleName, yn(r.Enabled), r.Frequency, r.StartTime]);
         } else {
-            h += `<div class="scriptBox"><button class="copy" data-copy="text">Copy</button><pre>${esc(d.text)}</pre></div>`;
+            h += codeBox('text');
         }
         $('detail').innerHTML = h;
+        // Definitions are shown in a read-only code editor (SQL colours, line numbers, Ctrl+F find), not a plain <pre>.
+        const box = $('detail').querySelector('.codeBox');
+        if (box) CodeMirror(box, { value: box.dataset.copy === 'script' ? createScript(name, d, kind === 'tabletypes') : d.text, mode: 'text/x-mssql', lineNumbers: true, readOnly: true, matchBrackets: true, viewportMargin: Infinity });
     }
+    const codeBox = what => `<div class="scriptBox"><div class="scriptBar"><button class="copy" data-copy="${what}" title="Copy"><i class="icon-copy"></i></button></div><div class="codeBox" data-copy="${what}"></div></div>`;
     $('detail').addEventListener('click', e => {
         const kind = kindOf(), c = defCache[kind]; if (!c) return;
+        const cp = e.target.closest('button.copy');
         if (e.target.id === 'bScript') { c.showScript = !c.showScript; renderDetail(); }
         else if (e.target.id === 'bTop') {
             cm.setValue(`SELECT TOP 500 * FROM ${quoteName(c.name)}`); showTab('editor'); run();
-        } else if (e.target.dataset.copy) copyText(e.target.dataset.copy === 'script' ? createScript(c.name, c.d, kind === 'tabletypes') : c.d.text);
+        } else if (cp) copyText(cp.dataset.copy === 'script' ? createScript(c.name, c.d, kind === 'tabletypes') : c.d.text);
     });
 
     // ---------- start ----------

@@ -27,7 +27,7 @@ A plain, functional web-based file manager for the disks of the machine it runs 
 Browse drives and folders, copy / move / delete, zip / extract, edit text files, upload and download, view properties.
 No fancy design on purpose. Protected by a login.
 
-**Current version: 2.6.1** (shown on the login page; defined in `LocalDiskBrowser.csproj`)
+**Current version: 2.7.0** (shown on the login page; defined in `LocalDiskBrowser.csproj`)
 
 ## Features
 

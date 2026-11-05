@@ -2,6 +2,9 @@
 
 Newest first. The current version is in `LocalDiskBrowser.csproj` and at the top of `README.md`.
 
+### 2.7.0
+SQL explorer: the definitions of tables, stored procedures, views, table types and functions are now shown in a read-only code editor (SQL colours, line numbers, Ctrl+F find, select and copy) instead of plain text. The Copy button is now a copy icon in a small bar above the code.
+
 ### 2.6.1
 SQL editor: the find / replace box is now a small bordered panel at the top right of the editor (was a full-width bar). Style only, in `sql.css`.
 
